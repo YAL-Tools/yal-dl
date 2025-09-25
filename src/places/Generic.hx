@@ -29,7 +29,8 @@ class Generic {
 			var imageFull = Config.outDir + "/" + imageRel;
 			//
 			if (CURL.download(imageURL, imageFull)) {
-				ctx.addImage(imageRel, imageAltTexts[i]);
+				var thumbRel = Magick.createThumb(imageRel, imageFull);
+				ctx.addImage(imageRel, thumbRel, imageAltTexts[i]);
 				imageCount += 1;
 			}
 		}
@@ -40,7 +41,7 @@ class Generic {
 			var videoFull = Config.outDir + "/" + videoRel;
 			//
 			if (CURL.download(videoURL, videoFull)) {
-				ctx.addVideo(videoURL);
+				ctx.addVideo(videoURL, null, "");
 				videoCount += 1;
 			}
 		}

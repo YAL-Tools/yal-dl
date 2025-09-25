@@ -84,11 +84,12 @@ class BSky {
 					thumbRel = thumb.rel;
 				}
 			}
-			ctx.addVideo(videoRel, "", thumbRel);
+			ctx.addVideo(videoRel, thumbRel, "");
 		}
 		
 		for (image in images) {
-			ctx.addImage(image.rel);
+			var thumbRel = Magick.createThumb(image.rel, image.full);
+			ctx.addImage(image.rel, thumbRel, "");
 		}
 		
 		// todo: parse those <p id> on the bottom to extract DID/handle

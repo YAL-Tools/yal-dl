@@ -66,10 +66,11 @@ class Twitter {
 					var thumbRel = Config.prefix + itemName + Config.sep + 'th.$thumbExt';
 					var thumbFull = Config.outDir + "/" + thumbRel;
 					if (!CURL.download(thumbURL, thumbFull)) thumbRel = null;
-					ctx.addVideo(url, item.altText ?? "", thumbRel);
+					ctx.addVideo(itemRel, item.altText ?? "", thumbRel);
 				};
 				default: {
-					ctx.addImage(url, item.altText ?? "");
+					var thumbRel = Magick.createThumb(itemRel, itemFull);
+					ctx.addImage(itemRel, thumbRel, item.altText ?? "");
 				}
 			}
 		}

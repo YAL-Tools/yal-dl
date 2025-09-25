@@ -37,20 +37,20 @@ class FetchCtx {
 	}
 	//
 	public var imageLines:Array<String> = [];
-	public function addImage(url:String, alt:String = "") {
-		var text = Config.markdown ? '[![$alt]($url)]($url)' : url;
+	public function addImage(imageRel:String, thumbRel:String, alt:String) {
+		var text = Config.markdown ? '[![$alt]($thumbRel)]($imageRel)' : imageRel;
 		lines.push(text);
 		imageLines.push(text);
 	}
 	//
 	public var videoLines:Array<String> = [];
-	public function addVideo(url:String, alt:String = "", ?thumb:String) {
+	public function addVideo(videoRel:String, thumbRel:String, alt:String) {
 		var text:String;
 		if (Config.markdown) {
-			if (thumb != null) {
-				text = '[![$alt]($thumb)]($url)';
-			} else text = '[video]($url)';
-		} else text = url;
+			if (thumbRel != null) {
+				text = '[![$alt]($thumbRel)]($videoRel)';
+			} else text = '[video]($videoRel)';
+		} else text = videoRel;
 		lines.push(text);
 		videoLines.push(text);
 	}

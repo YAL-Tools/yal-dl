@@ -101,5 +101,4 @@ If all is well, `bin/yal-dl.js` will be updated.
 - Documentation
 - Alt text
 - An option to include post text in Markdown output mode?
-- Thumbnail generation for gallery/masonry use (needs ImageMagick)
-- Add permalink to EXIF metadata (also needs IM)
+- Add permalink to EXIF metadata (needs IM)

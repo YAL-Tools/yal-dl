@@ -13,6 +13,7 @@ class Config {
 	public static var lossless = false;
 	public static var useWEBP = false;
 	public static var userAgent:String = null;
+	public static var thumbSize:String = null;
 	public static var sep = "=";
 	//
 	public static function ready() {

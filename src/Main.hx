@@ -58,6 +58,7 @@ class Main {
 				case "--png", "--lossless": Config.lossless = true; 1;
 				case "--webp": Config.useWEBP = true; 1;
 				case "--verbose": Config.verbose = true; 1;
+				case "--thumb": Config.thumbSize = args[argi + 1]; 2;
 				default: 0;
 			}
 			if (del > 0) {

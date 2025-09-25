@@ -192,27 +192,21 @@ FetchCtx.prototype = {
 			return "Failed to find media in \"" + this.url + "\".";
 		}
 	}
-	,addImage: function(url,alt) {
-		if(alt == null) {
-			alt = "";
-		}
-		var text = Config.markdown ? "[![" + alt + "](" + url + ")](" + url + ")" : url;
+	,addImage: function(imageRel,thumbRel,alt) {
+		var text = Config.markdown ? "[![" + alt + "](" + thumbRel + ")](" + imageRel + ")" : imageRel;
 		this.lines.push(text);
 		this.imageLines.push(text);
 	}
-	,addVideo: function(url,alt,thumb) {
-		if(alt == null) {
-			alt = "";
-		}
+	,addVideo: function(videoRel,thumbRel,alt) {
 		var text;
 		if(Config.markdown) {
-			if(thumb != null) {
-				text = "[![" + alt + "](" + thumb + ")](" + url + ")";
+			if(thumbRel != null) {
+				text = "[![" + alt + "](" + thumbRel + ")](" + videoRel + ")";
 			} else {
-				text = "[video](" + url + ")";
+				text = "[video](" + videoRel + ")";
 			}
 		} else {
-			text = url;
+			text = videoRel;
 		}
 		this.lines.push(text);
 		this.videoLines.push(text);
@@ -249,6 +243,29 @@ HxOverrides.remove = function(a,obj) {
 };
 HxOverrides.now = function() {
 	return Date.now();
+};
+var Magick = function() { };
+Magick.__name__ = true;
+Magick.run = function(args) {
+	return js_node_ChildProcess.spawnSync("magick",args);
+};
+Magick.createThumb = function(imageRel,imageFull) {
+	var thumbSize = Config.thumbSize;
+	if(thumbSize == null) {
+		return null;
+	}
+	var ext = Config.useWEBP ? "webp" : "jpg";
+	var suffix = Config.sep + ("th." + ext);
+	var thumbFull = haxe_io_Path.withoutExtension(imageFull) + suffix;
+	var thumbRel = haxe_io_Path.withoutExtension(imageRel) + suffix;
+	var proc = Magick.run([imageFull,"-resize",thumbSize + ">",thumbFull]);
+	if(proc.error != null) {
+		if(Config.verbose) {
+			console.info("Failed to run Magick: " + Std.string(proc.error));
+		}
+		return null;
+	}
+	return thumbRel;
 };
 var Main = function() { };
 Main.__name__ = true;
@@ -321,6 +338,10 @@ Main.main = function() {
 			break;
 		case "--prefix":
 			Config.prefix = args[argi + 1];
+			del = 2;
+			break;
+		case "--thumb":
+			Config.thumbSize = args[argi + 1];
 			del = 2;
 			break;
 		case "--verbose":
@@ -820,6 +841,11 @@ var haxe_io_Path = function(path) {
 	}
 };
 haxe_io_Path.__name__ = true;
+haxe_io_Path.withoutExtension = function(path) {
+	var s = new haxe_io_Path(path);
+	s.ext = null;
+	return s.toString();
+};
 haxe_io_Path.directory = function(path) {
 	var s = new haxe_io_Path(path);
 	if(s.dir == null) {
@@ -945,6 +971,11 @@ haxe_io_Path.addTrailingSlash = function(path) {
 		return path + "/";
 	} else {
 		return path;
+	}
+};
+haxe_io_Path.prototype = {
+	toString: function() {
+		return (this.dir == null ? "" : this.dir + (this.backslash ? "\\" : "/")) + this.file + (this.ext == null ? "" : "." + this.ext);
 	}
 };
 var haxe_iterators_ArrayIterator = function(array) {
@@ -1168,13 +1199,14 @@ places_BSky.get = function(ctx,prev) {
 				thumbRel = thumb.rel;
 			}
 		}
-		ctx.addVideo(videoRel,"",thumbRel);
+		ctx.addVideo(videoRel,thumbRel,"");
 	}
 	var _g = 0;
 	while(_g < images.length) {
 		var image = images[_g];
 		++_g;
-		ctx.addImage(image.rel);
+		var thumbRel = Magick.createThumb(image.rel,image.full);
+		ctx.addImage(image.rel,thumbRel,"");
 	}
 };
 var places_Generic = function() { };
@@ -1210,7 +1242,8 @@ places_Generic.get = function(ctx) {
 		var imageRel = Config.prefix + Tools.appendExtensionOf(Tools.appendIndex(name,imageCount),imageURL,"jpg");
 		var imageFull = Config.outDir + "/" + imageRel;
 		if(CURL.download(imageURL,imageFull)) {
-			ctx.addImage(imageRel,imageAltTexts[i]);
+			var thumbRel = Magick.createThumb(imageRel,imageFull);
+			ctx.addImage(imageRel,thumbRel,imageAltTexts[i]);
 			++imageCount;
 		}
 	}
@@ -1223,7 +1256,7 @@ places_Generic.get = function(ctx) {
 		var videoRel = Config.prefix + Tools.appendExtensionOf(Tools.appendIndex(name,videoCount),videoURL,"mp4");
 		var videoFull = Config.outDir + "/" + videoRel;
 		if(CURL.download(videoURL,videoFull)) {
-			ctx.addVideo(videoURL);
+			ctx.addVideo(videoURL,null,"");
 			++videoCount;
 		}
 	}
@@ -1302,11 +1335,12 @@ places_Twitter.get = function(ctx) {
 				thumbRel = null;
 			}
 			var tmp1 = item.altText;
-			ctx.addVideo(url,tmp1 != null ? tmp1 : "",thumbRel);
+			ctx.addVideo(itemRel,tmp1 != null ? tmp1 : "",thumbRel);
 			break;
 		default:
+			var thumbRel1 = Magick.createThumb(itemRel,itemFull);
 			var tmp2 = item.altText;
-			ctx.addImage(url,tmp2 != null ? tmp2 : "");
+			ctx.addImage(itemRel,thumbRel1,tmp2 != null ? tmp2 : "");
 		}
 	}
 };
