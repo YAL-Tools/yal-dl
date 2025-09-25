@@ -1,0 +1,3 @@
+bin/*
+!bin/yal-dl.js
+dump/

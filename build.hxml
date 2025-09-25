@@ -1,0 +1,5 @@
+--js bin/yal-dl.js
+--library hxnodejs
+--class-path src
+--main Main
+--cmd test-node.bat
