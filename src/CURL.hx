@@ -6,11 +6,18 @@ using Tools;
 
 class CURL {
 	static function spawnCURL(args:Array<String>) {
+		static var first = true;
+		if (first) {
+			first = false;
+		} else if (Config.delay > 0) {
+			Sys.sleep(Config.delay / 1000);
+		}
 		if (Config.userAgent != null) {
 			args = args.concat(["--user-agent", Config.userAgent]);
 		}
 		return ChildProcess.spawnSync("curl", args);
 	}
+	
 	public static function getText(url:String, type:String):String {
 		var tmp = "tmp/out.html";
 		Console.verbose('Fetching "$url"...');
@@ -39,23 +46,23 @@ class CURL {
 			Console.verbose("No file!");
 			return null;
 		}
-		var stat = try {
-			FileSystem.stat(outPath);
-		} catch (x:Dynamic) {
-			null;
-		}
-		if (stat != null) {
-			Console.verbose('OK! (${stat.size.printSize()})');
-		} else {
-			Console.verbose("OK! (???)");
-		}
+		var size = FileTools.getSize(outPath);
+		Console.verbose('OK! (${FileTools.printSize(size)})');
 		return File.getContent(outPath);
 	}
+	
 	public static function download(url:String, out:String) {
 		Console.verbose('Downloading "$url"');
-		if (FileSystem.exists(out)) {
-			Console.verbose('"$out" already exists!');
-			return true;
+		var cachePath = (Config.cache
+			? Path.join([Config.cacheDir, Tools.sanitizeName(url)])
+			: null
+		);
+		if (cachePath != null) {
+			if (FileSystem.exists(cachePath)) {
+				Console.verbose("Cached!");
+				File.copy(cachePath, out);
+				return true;
+			}
 		}
 		
 		Console.verbose('-> "$out"... ');
@@ -72,16 +79,14 @@ class CURL {
 			return false;
 		}
 		//
-		var stat = try {
-			FileSystem.stat(out);
-		} catch (x:Dynamic) {
-			null;
-		}
-		if (stat != null) {
-			Console.verbose('OK! (${stat.size.printSize()})');
-		} else {
-			Console.verbose("OK! (???)");
-		}
+		if (cachePath != null) File.copy(out, cachePath);
+		//
+		var size = FileTools.getSize(out);
+		Console.verbose('OK! (${FileTools.printSize(size)})');
 		return true;
+	}
+	
+	public static inline function downloadImage(url:String, out:String) {
+		return download(url, out);
 	}
 }

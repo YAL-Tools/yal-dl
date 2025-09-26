@@ -11,9 +11,18 @@ class Config {
 	public static var markdown = false;
 	public static var magick = false;
 	public static var lossless = false;
+	//
 	public static var useWEBP = false;
+	public static var quality = 80;
+	//
 	public static var userAgent:String = null;
 	public static var thumbSize:String = null;
+	//
+	public static var maxWidth = 0;
+	public static var maxHeight = 0;
+	public static var maxSize = 0;
+	//
+	public static var delay = 0;
 	public static var sep = "=";
 	//
 	public static function ready() {

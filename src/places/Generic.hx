@@ -28,9 +28,9 @@ class Generic {
 			var imageRel = Config.prefix + name.appendIndex(imageCount).appendExtensionOf(imageURL, "jpg");
 			var imageFull = Config.outDir + "/" + imageRel;
 			//
-			if (CURL.download(imageURL, imageFull)) {
+			if (CURL.downloadImage(imageURL, imageFull)) {
 				var thumbRel = Magick.createThumb(imageRel, imageFull);
-				ctx.addImage(imageRel, thumbRel, imageAltTexts[i]);
+				ctx.addImage(imageRel, imageFull, thumbRel, imageAltTexts[i]);
 				imageCount += 1;
 			}
 		}

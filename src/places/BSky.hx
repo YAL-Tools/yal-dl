@@ -56,7 +56,7 @@ class BSky {
 			
 			var imageRel = Config.prefix + name.appendIndex(images.length) + "." + imageExt;
 			var imageFull = Config.outDir + "/" + imageRel;
-			if (!CURL.download(imageURL, imageFull)) continue;
+			if (!CURL.downloadImage(imageURL, imageFull)) continue;
 			
 			images.push({
 				rel: imageRel,
@@ -89,7 +89,7 @@ class BSky {
 		
 		for (image in images) {
 			var thumbRel = Magick.createThumb(image.rel, image.full);
-			ctx.addImage(image.rel, thumbRel, "");
+			ctx.addImage(image.rel, image.full, thumbRel, "");
 		}
 		
 		// todo: parse those <p id> on the bottom to extract DID/handle

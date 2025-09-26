@@ -10,6 +10,11 @@ function $extend(from, fields) {
 var CURL = function() { };
 CURL.__name__ = true;
 CURL.spawnCURL = function(args) {
+	if(CURL.spawnCURL_first) {
+		CURL.spawnCURL_first = false;
+	} else if(Config.delay > 0) {
+		Sys.sleep(Config.delay / 1000);
+	}
 	if(Config.userAgent != null) {
 		args = args.concat(["--user-agent",Config.userAgent]);
 	}
@@ -44,19 +49,10 @@ CURL.getText = function(url,type) {
 		}
 		return null;
 	}
-	var stat;
-	try {
-		stat = js_node_Fs.statSync(outPath);
-	} catch( _g ) {
-		stat = null;
-	}
-	if(stat != null) {
-		var text = "OK! (" + Tools.printSize(stat.size) + ")";
-		if(Config.verbose) {
-			console.info(text);
-		}
-	} else if(Config.verbose) {
-		console.info("OK! (???)");
+	var size = FileTools.getSize(outPath);
+	var text = "OK! (" + FileTools.printSize(size) + ")";
+	if(Config.verbose) {
+		console.info(text);
 	}
 	return js_node_Fs.readFileSync(outPath,{ encoding : "utf8"});
 };
@@ -64,11 +60,15 @@ CURL.download = function(url,out) {
 	if(Config.verbose) {
 		console.info("Downloading \"" + url + "\"");
 	}
-	if(sys_FileSystem.exists(out)) {
-		if(Config.verbose) {
-			console.info("\"" + out + "\" already exists!");
+	var cachePath = Config.cache ? haxe_io_Path.join([Config.cacheDir,Tools.sanitizeName(url)]) : null;
+	if(cachePath != null) {
+		if(sys_FileSystem.exists(cachePath)) {
+			if(Config.verbose) {
+				console.info("Cached!");
+			}
+			sys_io_File.copy(cachePath,out);
+			return true;
 		}
-		return true;
 	}
 	if(Config.verbose) {
 		console.info("-> \"" + out + "\"... ");
@@ -86,21 +86,18 @@ CURL.download = function(url,out) {
 		}
 		return false;
 	}
-	var stat;
-	try {
-		stat = js_node_Fs.statSync(out);
-	} catch( _g ) {
-		stat = null;
+	if(cachePath != null) {
+		sys_io_File.copy(out,cachePath);
 	}
-	if(stat != null) {
-		var text = "OK! (" + Tools.printSize(stat.size) + ")";
-		if(Config.verbose) {
-			console.info(text);
-		}
-	} else if(Config.verbose) {
-		console.info("OK! (???)");
+	var size = FileTools.getSize(out);
+	var text = "OK! (" + FileTools.printSize(size) + ")";
+	if(Config.verbose) {
+		console.info(text);
 	}
 	return true;
+};
+CURL.downloadImage = function(url,out) {
+	return CURL.download(url,out);
 };
 var Config = function() { };
 Config.__name__ = true;
@@ -192,7 +189,82 @@ FetchCtx.prototype = {
 			return "Failed to find media in \"" + this.url + "\".";
 		}
 	}
-	,addImage: function(imageRel,thumbRel,alt) {
+	,addImage: function(imageRel,imageFull,thumbRel,alt) {
+		var maxSize = Config.maxSize;
+		var maxWidth = Config.maxWidth;
+		var maxHeight = Config.maxHeight;
+		if(maxSize > 0 || maxWidth > 0 || maxHeight > 0) {
+			do {
+				var wantResize = false;
+				if(Config.maxSize > 0) {
+					var size = FileTools.getSize(imageFull);
+					haxe_Log.trace(imageFull,{ fileName : "src/FetchCtx.hx", lineNumber : 51, className : "FetchCtx", methodName : "addImage", customParams : [size / 1024,maxSize / 1024]});
+					wantResize = size > maxSize;
+				}
+				if(!wantResize && (Config.maxWidth > 0 || Config.maxHeight > 0)) {
+					var dims = Magick.getDims(imageFull);
+					if(dims != null) {
+						if(maxWidth > 0 && dims.width > maxWidth) {
+							wantResize = true;
+						} else if(maxHeight > 0 && dims.height > maxHeight) {
+							wantResize = true;
+						}
+					}
+				}
+				if(!wantResize) {
+					break;
+				}
+				var currExt = haxe_io_Path.extension(imageFull).toLowerCase();
+				var newExt = Config.useWEBP ? "webp" : "jpg";
+				var sameExt = currExt == newExt;
+				var useTemp = sameExt && maxSize > 0;
+				var tempFull = useTemp ? Config.tempDir + ("/temp." + newExt) : haxe_io_Path.withExtension(imageFull,newExt);
+				var args = [imageFull,"-quality",Std.string(Config.quality)];
+				var note = "Converting \"" + imageRel + "\" to " + newExt.toUpperCase();
+				if(maxWidth > 0 || maxHeight > 0) {
+					var size1 = "x";
+					if(maxWidth > 0) {
+						size1 = maxWidth + size1;
+					}
+					if(maxHeight > 0) {
+						size1 += maxHeight;
+					}
+					note += ", " + size1;
+					args = args.concat(["-resize",size1 + ">"]);
+				}
+				if(Config.verbose) {
+					console.info(note);
+				}
+				Magick.run(args.concat([tempFull]));
+				if(maxSize > 0) {
+					var scaleStep = 0.75;
+					var scale = 100.0;
+					var _g = 0;
+					while(_g < 7) {
+						var attempt = _g++;
+						scale *= scaleStep;
+						var size2 = FileTools.getSize(tempFull);
+						if(size2 <= maxSize) {
+							break;
+						}
+						var sizeStr = Math.round(scale * 100) / 100 + "%";
+						var text = "Too big (" + FileTools.printSize(size2) + "), trying " + sizeStr + " scale";
+						if(Config.verbose) {
+							console.info(text);
+						}
+						Magick.run([imageFull,"-resize",sizeStr,"-quality",Std.string(Config.quality),tempFull]);
+					}
+				}
+				if(!sameExt) {
+					js_node_Fs.unlinkSync(imageFull);
+					imageRel = haxe_io_Path.withExtension(imageRel,newExt);
+					imageFull = haxe_io_Path.withExtension(imageFull,newExt);
+				}
+				if(useTemp) {
+					sys_io_File.copy(tempFull,imageFull);
+				}
+			} while(false);
+		}
 		var text = Config.markdown ? "[![" + alt + "](" + thumbRel + ")](" + imageRel + ")" : imageRel;
 		this.lines.push(text);
 		this.imageLines.push(text);
@@ -211,6 +283,43 @@ FetchCtx.prototype = {
 		this.lines.push(text);
 		this.videoLines.push(text);
 	}
+};
+var FileTools = function() { };
+FileTools.__name__ = true;
+FileTools.printSize = function(i) {
+	if(i < 0) {
+		return "???";
+	}
+	var n = i;
+	if(n < 10000) {
+		return Std.string(Math.round(n * 100) / 100) + " " + "B";
+	}
+	n /= 1024;
+	if(n < 10000) {
+		return Std.string(Math.round(n * 100) / 100) + " " + "KB";
+	}
+	n /= 1024;
+	return Std.string(Math.round(n * 100) / 100) + " " + "MB";
+};
+FileTools.printSpawnBuffer = function(buf) {
+	if(buf == null || typeof(buf) == "string") {
+		return buf;
+	} else {
+		return buf.toString();
+	}
+};
+FileTools.getSize = function(path) {
+	try {
+		return js_node_Fs.statSync(path).size;
+	} catch( _g ) {
+		var x = haxe_Exception.caught(_g).unwrap();
+		if(Config.verbose) {
+			console.info("Error getting size for \"" + path + "\":" + Std.string(x));
+		}
+		return -1;
+	}
+};
+FileTools.getAltPath = function(path) {
 };
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
@@ -247,25 +356,46 @@ HxOverrides.now = function() {
 var Magick = function() { };
 Magick.__name__ = true;
 Magick.run = function(args) {
-	return js_node_ChildProcess.spawnSync("magick",args);
+	var proc = js_node_ChildProcess.spawnSync("magick",args);
+	if(proc.error != null) {
+		if(Config.verbose) {
+			console.info("Failed to run Magick: " + Std.string(proc.error));
+		}
+	}
+	return proc;
 };
 Magick.createThumb = function(imageRel,imageFull) {
 	var thumbSize = Config.thumbSize;
 	if(thumbSize == null) {
 		return null;
 	}
+	if(Config.verbose) {
+		console.info("Generating a thumbnail for \"" + imageRel + "\"");
+	}
 	var ext = Config.useWEBP ? "webp" : "jpg";
 	var suffix = Config.sep + ("th." + ext);
 	var thumbFull = haxe_io_Path.withoutExtension(imageFull) + suffix;
 	var thumbRel = haxe_io_Path.withoutExtension(imageRel) + suffix;
-	var proc = Magick.run([imageFull,"-resize",thumbSize + ">",thumbFull]);
+	var proc = Magick.run([imageFull,"-resize",thumbSize + ">","-quality",Std.string(Config.quality),thumbFull]);
 	if(proc.error != null) {
-		if(Config.verbose) {
-			console.info("Failed to run Magick: " + Std.string(proc.error));
-		}
 		return null;
 	}
 	return thumbRel;
+};
+Magick.getDims = function(imageFull) {
+	var proc = Magick.run([imageFull,"-format","dims:%w:%h","info:"]);
+	if(proc.error != null) {
+		return null;
+	}
+	var text = FileTools.printSpawnBuffer(proc.stdout);
+	if(Magick.getDims_rxDims.match(text)) {
+		return { width : Std.parseInt(Magick.getDims_rxDims.matched(1)), height : Std.parseInt(Magick.getDims_rxDims.matched(2))};
+	} else {
+		if(Config.verbose) {
+			console.info("Couldn't match magick output: \"" + text + "\"");
+		}
+		return null;
+	}
 };
 var Main = function() { };
 Main.__name__ = true;
@@ -312,6 +442,15 @@ Main.main = function() {
 			Config.cache = true;
 			del = 1;
 			break;
+		case "--delay":
+			var def = 0;
+			if(def == null) {
+				def = 0;
+			}
+			var tmp = Std.parseInt(args[argi + 1]);
+			Config.delay = tmp != null ? tmp : def;
+			del = 2;
+			break;
 		case "--dir":
 			Config.outDir = args[argi + 1];
 			del = 2;
@@ -327,6 +466,62 @@ Main.main = function() {
 		case "--markdown":case "--md":
 			Config.markdown = true;
 			del = 1;
+			break;
+		case "--max-dimensions":case "--max-dims":
+			var rxDims = new EReg("^(\\d+)x(\\d+)$","");
+			if(rxDims.match(args[argi + 1])) {
+				var tmp1 = Std.parseInt(rxDims.matched(1));
+				Config.maxWidth = tmp1 != null ? tmp1 : 0;
+				var tmp2 = Std.parseInt(rxDims.matched(2));
+				Config.maxHeight = tmp2 != null ? tmp2 : 0;
+			} else {
+				process.stdout.write("Expected WxH for --max-dims!");
+				process.stdout.write("\n");
+			}
+			del = 2;
+			break;
+		case "--max-height":
+			var def1 = 0;
+			if(def1 == null) {
+				def1 = 0;
+			}
+			var tmp3 = Std.parseInt(args[argi + 1]);
+			Config.maxWidth = tmp3 != null ? tmp3 : def1;
+			del = 2;
+			break;
+		case "--max-size":
+			var snip = args[argi + 1].toLowerCase();
+			var rxSize = new EReg("^([\\d,.]+)\\s*([km]?b?)?$","");
+			if(rxSize.match(snip)) {
+				var numStr = StringTools.replace(rxSize.matched(1),",",".");
+				var num = parseFloat(numStr);
+				if(!isNaN(num)) {
+					var unit = rxSize.matched(2);
+					var mult = 1024;
+					if(unit == "mb" || unit == "m") {
+						mult = 1048576;
+					} else if(unit == "b") {
+						mult = 1;
+					}
+					Config.maxSize = Math.round(mult * num);
+				} else {
+					process.stdout.write(Std.string("\"" + numStr + "\" is not a valid number for --max-size!"));
+					process.stdout.write("\n");
+				}
+			} else {
+				process.stdout.write("Expected #KB/#MB for --max-size!");
+				process.stdout.write("\n");
+			}
+			del = 2;
+			break;
+		case "--max-width":
+			var def2 = 0;
+			if(def2 == null) {
+				def2 = 0;
+			}
+			var tmp4 = Std.parseInt(args[argi + 1]);
+			Config.maxWidth = tmp4 != null ? tmp4 : def2;
+			del = 2;
 			break;
 		case "--out":
 			outPath = args[argi + 1];
@@ -376,7 +571,7 @@ Main.main = function() {
 			line = StringTools.trim(line);
 			if(Main.rxURL.match(line)) {
 				var url = line;
-				if(header != null) {
+				if(header != null && header != "") {
 					if(Config.markdown) {
 						outLines.push("## [" + header + "](" + url + ")");
 					} else {
@@ -507,6 +702,13 @@ StringTools.trim = function(s) {
 };
 StringTools.replace = function(s,sub,by) {
 	return s.split(sub).join(by);
+};
+var Sys = function() { };
+Sys.__name__ = true;
+Sys.sleep = function(seconds) {
+	var end = Date.now() + seconds * 1000;
+	while(Date.now() <= end) {
+	}
 };
 var haxe_io_Output = function() { };
 haxe_io_Output.__name__ = true;
@@ -726,18 +928,6 @@ Tools.getMeta = function(html,property) {
 	});
 	return result;
 };
-Tools.printSize = function(i) {
-	var n = i;
-	if(n < 10000) {
-		return Std.string(Math.round(n * 100) / 100) + " " + "B";
-	}
-	n /= 1024;
-	if(n < 10000) {
-		return Std.string(Math.round(n * 100) / 100) + " " + "KB";
-	}
-	n /= 1024;
-	return Std.string(Math.round(n * 100) / 100) + " " + "MB";
-};
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
 	this.message = message;
@@ -773,6 +963,31 @@ haxe_Exception.prototype = $extend(Error.prototype,{
 		return this.__nativeException;
 	}
 });
+var haxe_Log = function() { };
+haxe_Log.__name__ = true;
+haxe_Log.formatOutput = function(v,infos) {
+	var str = Std.string(v);
+	if(infos == null) {
+		return str;
+	}
+	var pstr = infos.fileName + ":" + infos.lineNumber;
+	if(infos.customParams != null) {
+		var _g = 0;
+		var _g1 = infos.customParams;
+		while(_g < _g1.length) {
+			var v = _g1[_g];
+			++_g;
+			str += ", " + Std.string(v);
+		}
+	}
+	return pstr + ": " + str;
+};
+haxe_Log.trace = function(v,infos) {
+	var str = haxe_Log.formatOutput(v,infos);
+	if(typeof(console) != "undefined" && console.log != null) {
+		console.log(str);
+	}
+};
 var haxe_ValueException = function(value,previous,native) {
 	haxe_Exception.call(this,String(value),previous,native);
 	this.value = value;
@@ -859,6 +1074,11 @@ haxe_io_Path.extension = function(path) {
 		return "";
 	}
 	return s.ext;
+};
+haxe_io_Path.withExtension = function(path,ext) {
+	var s = new haxe_io_Path(path);
+	s.ext = ext;
+	return s.toString();
 };
 haxe_io_Path.join = function(paths) {
 	var _g = [];
@@ -1206,7 +1426,7 @@ places_BSky.get = function(ctx,prev) {
 		var image = images[_g];
 		++_g;
 		var thumbRel = Magick.createThumb(image.rel,image.full);
-		ctx.addImage(image.rel,thumbRel,"");
+		ctx.addImage(image.rel,image.full,thumbRel,"");
 	}
 };
 var places_Generic = function() { };
@@ -1243,7 +1463,7 @@ places_Generic.get = function(ctx) {
 		var imageFull = Config.outDir + "/" + imageRel;
 		if(CURL.download(imageURL,imageFull)) {
 			var thumbRel = Magick.createThumb(imageRel,imageFull);
-			ctx.addImage(imageRel,thumbRel,imageAltTexts[i]);
+			ctx.addImage(imageRel,imageFull,thumbRel,imageAltTexts[i]);
 			++imageCount;
 		}
 	}
@@ -1293,11 +1513,13 @@ places_Twitter.get = function(ctx) {
 		}
 		media = [media[ind - 1]];
 	}
-	var foundPerType = { };
-	var _g = 0;
-	while(_g < media.length) {
-		var item = media[_g];
-		++_g;
+	var _g_current = 0;
+	var _g_array = media;
+	while(_g_current < _g_array.length) {
+		var _g_value = _g_array[_g_current];
+		var _g_key = _g_current++;
+		var itemInd = _g_key;
+		var item = _g_value;
 		var url = item.url;
 		var qAt = url.indexOf("?");
 		if(qAt >= 0) {
@@ -1313,17 +1535,18 @@ places_Twitter.get = function(ctx) {
 				itemExt = "jpg";
 			}
 		}
-		var tmp = foundPerType[itemExt];
-		var indPerType = tmp != null ? tmp : 0;
-		var itemName = Tools.appendIndex(name,indPerType);
+		var itemName = Tools.appendIndex(name,itemInd);
 		var itemRel = Config.prefix + itemName + ("." + itemExt);
 		var itemFull = Config.outDir + "/" + itemRel;
-		if(!CURL.download(url,itemFull)) {
+		var isVideo = item.type == "gif" || item.type == "video";
+		if(isVideo) {
+			if(!CURL.download(url,itemFull)) {
+				continue;
+			}
+		} else if(!CURL.download(url,itemFull)) {
 			continue;
 		}
-		foundPerType[itemExt] = indPerType + 1;
-		switch(item.type) {
-		case "gif":case "video":
+		if(isVideo) {
 			var thumbURL = item.thumbnail_url;
 			var thumbExt = haxe_io_Path.extension(thumbURL);
 			if(thumbExt == "") {
@@ -1334,13 +1557,12 @@ places_Twitter.get = function(ctx) {
 			if(!CURL.download(thumbURL,thumbFull)) {
 				thumbRel = null;
 			}
-			var tmp1 = item.altText;
-			ctx.addVideo(itemRel,tmp1 != null ? tmp1 : "",thumbRel);
-			break;
-		default:
+			var tmp = item.altText;
+			ctx.addVideo(itemRel,tmp != null ? tmp : "",thumbRel);
+		} else {
 			var thumbRel1 = Magick.createThumb(itemRel,itemFull);
-			var tmp2 = item.altText;
-			ctx.addImage(itemRel,thumbRel1,tmp2 != null ? tmp2 : "");
+			var tmp1 = item.altText;
+			ctx.addImage(itemRel,itemFull,thumbRel1,tmp1 != null ? tmp1 : "");
 		}
 	}
 };
@@ -1374,6 +1596,25 @@ sys_FileSystem.createDirectory = function(path) {
 			}
 		}
 	}
+};
+var sys_io_File = function() { };
+sys_io_File.__name__ = true;
+sys_io_File.copy = function(srcPath,dstPath) {
+	var src = js_node_Fs.openSync(srcPath,"r");
+	var stat = js_node_Fs.fstatSync(src);
+	var dst = js_node_Fs.openSync(dstPath,"w",stat.mode);
+	var bytesRead;
+	var pos = 0;
+	while(true) {
+		bytesRead = js_node_Fs.readSync(src,sys_io_File.copyBuf,0,65536,pos);
+		if(!(bytesRead > 0)) {
+			break;
+		}
+		js_node_Fs.writeSync(dst,sys_io_File.copyBuf,0,bytesRead);
+		pos += bytesRead;
+	}
+	js_node_Fs.closeSync(src);
+	js_node_Fs.closeSync(dst);
 };
 var sys_io_FileInput = function(fd) {
 	this.hasReachedEof = false;
@@ -1504,7 +1745,9 @@ if(typeof(performance) != "undefined" ? typeof(performance.now) == "function" : 
 if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.__name__ = true;
 Array.__name__ = true;
+Date.__name__ = "Date";
 js_Boot.__toStr = ({ }).toString;
+CURL.spawnCURL_first = true;
 Config.verbose = false;
 Config.cache = false;
 Config.outDir = ".";
@@ -1513,7 +1756,13 @@ Config.markdown = false;
 Config.magick = false;
 Config.lossless = false;
 Config.useWEBP = false;
+Config.quality = 80;
+Config.maxWidth = 0;
+Config.maxHeight = 0;
+Config.maxSize = 0;
+Config.delay = 0;
 Config.sep = "=";
+Magick.getDims_rxDims = new EReg("\\bdims:(\\d+):(\\d+)","");
 Main.rxURL = new EReg("http[s]?://(.+?)($|(?:/.*))","");
 Tools.getMeta_rxContent = new EReg("\\bcontent\\s*=\\s*\"([\\s\\S]+?)\"","");
 Tools.getMeta_rxName = new EReg("\\bname\\s*=\\s*\"(.+?)\"","");
@@ -1523,5 +1772,6 @@ Tools.sanitizeName_rxProtocol = new EReg("http[s]?://(.+)","");
 places_BSky.get_rxVideoID = new EReg(".+/(.+)/?$","");
 places_BSky.get_rxPath = new EReg("^/profile/(.+?)/post/(.+?)(/|$)","");
 places_Twitter.get_rxMediaID = new EReg("/status/\\d+/photo/(\\d+)","");
+sys_io_File.copyBuf = js_node_buffer_Buffer.alloc(65536);
 Main.main();
 })({});

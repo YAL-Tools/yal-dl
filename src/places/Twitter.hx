@@ -36,8 +36,7 @@ class Twitter {
 			media = [media[ind - 1]];
 		}
 		
-		var foundPerType = new DynamicAccess<Int>();
-		for (item in media) {
+		for (itemInd => item in media) {
 			var url = item.url;
 			var qAt = url.indexOf("?");
 			if (qAt >= 0) url = url.substring(0, qAt);
@@ -50,28 +49,30 @@ class Twitter {
 				}
 			}
 			
-			var indPerType = foundPerType[itemExt] ?? 0;
-			var itemName = name.appendIndex(indPerType);
+			var itemName = name.appendIndex(itemInd);
 			var itemRel = Config.prefix + itemName + '.$itemExt';
 			var itemFull = Config.outDir + "/" + itemRel;
+			
 			//
-			if (!CURL.download(url, itemFull)) continue;
-			foundPerType[itemExt] = indPerType + 1;
+			var isVideo = item.type == GIF || item.type == Video;
+			if (isVideo) {
+				if (!CURL.download(url, itemFull)) continue;
+			} else {
+				if (!CURL.downloadImage(url, itemFull)) continue;
+			}
+			
 			//
-			switch (item.type) {
-				case GIF, Video: {
-					var thumbURL = item.thumbnail_url;
-					var thumbExt = Path.extension(thumbURL);
-					if (thumbExt == "") thumbExt = "jpg";
-					var thumbRel = Config.prefix + itemName + Config.sep + 'th.$thumbExt';
-					var thumbFull = Config.outDir + "/" + thumbRel;
-					if (!CURL.download(thumbURL, thumbFull)) thumbRel = null;
-					ctx.addVideo(itemRel, item.altText ?? "", thumbRel);
-				};
-				default: {
-					var thumbRel = Magick.createThumb(itemRel, itemFull);
-					ctx.addImage(itemRel, thumbRel, item.altText ?? "");
-				}
+			if (isVideo) {
+				var thumbURL = item.thumbnail_url;
+				var thumbExt = Path.extension(thumbURL);
+				if (thumbExt == "") thumbExt = "jpg";
+				var thumbRel = Config.prefix + itemName + Config.sep + 'th.$thumbExt';
+				var thumbFull = Config.outDir + "/" + thumbRel;
+				if (!CURL.downloadImage(thumbURL, thumbFull)) thumbRel = null;
+				ctx.addVideo(itemRel, item.altText ?? "", thumbRel);
+			} else {
+				var thumbRel = Magick.createThumb(itemRel, itemFull);
+				ctx.addImage(itemRel, itemFull, thumbRel, item.altText ?? "");
 			}
 		}
 	}

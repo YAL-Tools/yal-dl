@@ -47,18 +47,56 @@ class Main {
 		var inPath:String = null;
 		var outPath:String = null;
 		while (argi < args.length) {
+			inline function str(ofs = 0) {
+				return args[argi + (1 + ofs)];
+			}
+			inline function int(def = 0, ofs = 0) {
+				return Std.parseInt(args[argi + (1 + ofs)]) ?? def;
+			}
 			var del = switch (args[argi]) {
-				case "--in": inPath = args[argi + 1]; 2;
-				case "--out": outPath = args[argi + 1]; 2;
-				case "--prefix": Config.prefix = args[argi + 1]; 2;
-				case "--dir": Config.outDir = args[argi + 1]; 2;
+				case "--in": inPath = str(); 2;
+				case "--out": outPath = str(); 2;
+				case "--prefix": Config.prefix = str(); 2;
+				case "--dir": Config.outDir = str(); 2;
 				case "--md", "--markdown": Config.markdown = true; 1;
 				case "--plain": Config.markdown = false; 1;
 				case "--cache": Config.cache = true; 1;
 				case "--png", "--lossless": Config.lossless = true; 1;
 				case "--webp": Config.useWEBP = true; 1;
 				case "--verbose": Config.verbose = true; 1;
-				case "--thumb": Config.thumbSize = args[argi + 1]; 2;
+				case "--thumb": Config.thumbSize = str(); 2;
+				case "--delay": Config.delay = int(0); 2;
+				case "--max-size": {
+					var snip = str().toLowerCase();
+					static var rxSize = ~/^([\d,.]+)\s*([km]?b?)?$/;
+					if (rxSize.match(snip)) {
+						var numStr = rxSize.matched(1).replace(",", ".");
+						var num = Std.parseFloat(numStr);
+						if (!Math.isNaN(num)) {
+							var unit = rxSize.matched(2);
+							var mult = 1024;
+							if (unit == "mb" || unit == "m") {
+								mult = 1024 * 1024;
+							} else if (unit == "b") {
+								mult = 1;
+							}
+							Config.maxSize = Math.round(mult * num);
+						} else Sys.println('"$numStr" is not a valid number for --max-size!');
+					} else Sys.println("Expected #KB/#MB for --max-size!");
+					2;
+				};
+				case "--max-width": Config.maxWidth = int(0); 2;
+				case "--max-height": Config.maxWidth = int(0); 2;
+				case "--max-dims", "--max-dimensions": {
+					static var rxDims = ~/^(\d+)x(\d+)$/;
+					if (rxDims.match(str())) {
+						Config.maxWidth = Std.parseInt(rxDims.matched(1)) ?? 0;
+						Config.maxHeight = Std.parseInt(rxDims.matched(2)) ?? 0;
+					} else {
+						Sys.println("Expected WxH for --max-dims!");
+					}
+					2;
+				};
 				default: 0;
 			}
 			if (del > 0) {
@@ -87,7 +125,7 @@ class Main {
 				line = line.trim();
 				if (rxURL.match(line)) {
 					var url = line;
-					if (header != null) {
+					if (header != null && header != "") {
 						if (Config.markdown) {
 							addLine('## [$header]($url)');
 						} else {

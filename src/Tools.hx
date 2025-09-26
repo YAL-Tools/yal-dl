@@ -1,3 +1,6 @@
+import sys.FileSystem;
+import haxe.extern.EitherType;
+import js.node.Buffer;
 import haxe.io.Path;
 using StringTools;
 
@@ -76,17 +79,5 @@ class Tools {
 			result.push(text);
 		});
 		return result;
-	}
-	
-	public static function printSize(i:Int):String {
-		var n:Float = i;
-		inline function print(u:String) {
-			return Std.string(Math.round(n * 100) / 100) + " " + u;
-		}
-		if (n < 10_000) return print("B");
-		n /= 1024;
-		if (n < 10_000) return print("KB");
-		n /= 1024;
-		return print("MB");
 	}
 }
