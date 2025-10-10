@@ -1,0 +1,104 @@
+```raw
+<style>
+#doc {
+	pre {
+		border: 1px solid #f3f3f3;
+	}
+	pre.md .header {
+		color: #005CC5;
+	}
+	pre.md .link-text {
+		color: #032F62;
+		text-decoration: underline;
+	}
+	pre a:not([href="javascript:void(0)"]) {
+		text-decoration: underline;
+	}
+	pre.md .comment {
+		color: #080;
+	}
+}
+#night:checked + .main #doc {
+	pre.md .header {
+		color: #D1F1A9;
+	}
+	pre.md .link-text {
+		color: white;
+	}
+	pre.md .comment {
+		color: #7285B7;
+	}
+}
+</style>
+```
+```exec
+function link(text, href) {
+	if (href == null) href = "javascript:void(0)";
+	return '<a href="' + href + '">' + text + '</a>';
+}
+DocMd.addCodeTag("dl", function(snip) {
+	snip = DocMd.unindent(snip);
+	var lines = snip.split("\n");
+	var rxImage = new EReg(".+\\.(png|jpg|webp)$", "");
+	var rxLink = new EReg("^https?://", "");
+	for (i in 0 ... lines.length) {
+		var line = lines[i];
+		if (rxImage.match(line)) {
+			lines[i] = link(line, "javascript:void(0)");
+		}
+		else if (rxLink.match(line)) {
+			lines[i] = link(line, line);
+		}
+		else if (line != "") {
+			//lines[i] = '<span class="co">' + line + '</span>';
+		}
+	}
+	return '<pre>' + lines.join("\n") + '</pre>';
+});
+var rxURLs = new EReg("https?://[^\\s)]+", "g");
+var rxLinks = new EReg("(\\!?\\[)" + "(.*)" + "\\]\\(" + "(.+)" + "\\)", "g");
+renderMd = function(snip) {
+	snip = rxURLs.map(snip, function(rx) {
+		var url = rx.matched(0);
+		return link(url, url);
+	});
+	snip = rxLinks.map(snip, function(rx) {
+		var prefix = rx.matched(1);
+		var text = rx.matched(2);
+		var url = rx.matched(3);
+		if (!StringTools.startsWith(url, "<")) {
+			url = link(url, null);
+		}
+		text = renderMd(text);
+		return prefix
+			+ '<span class="link-text">' + text + '</span>'
+			+ "]("
+			+ url
+			+ ")";
+	});
+	return snip;
+};
+DocMd.addCodeTag("md", function(snip) {
+	snip = DocMd.unindent(snip);
+	var rxHeader = new EReg("^(#+)(\\s*)(.+)", "");
+	var lines = snip.split("\n");
+	for (i in 0 ... lines.length) {
+		var line = lines[i];
+		if (rxHeader.match(line)) {
+			lines[i] = ('<span class="header">'
+				+ rxHeader.matched(1)
+				+ rxHeader.matched(2)
+				+ renderMd(rxHeader.matched(3))
+				+ '</span>'
+			);
+		}
+		else if (StringTools.startsWith(line, "<!--")) {
+			lines[i] = '<span class="comment">' + StringTools.htmlEscape(line, false) + '</span>';
+		}
+		else {
+			lines[i] = renderMd(line);
+		}
+	}
+	return '<pre class="md">' + lines.join("\n") + '</pre>';
+});
+```

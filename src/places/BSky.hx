@@ -45,16 +45,18 @@ class BSky {
 		for (imageURL in imageURLs) {
 			imageURL = ~/\/img\/feed_thumbnail\//.replace(imageURL, "/img/feed_fullsize/");
 			
-			var imageExt:String;
+			var imageExt = Config.imageExt;
 			if (Config.lossless) {
 				imageURL = ~/@jpeg$/.replace(imageURL, "@png");
-				imageExt = "png";
+				imageExt ??= "png";
 			} else if (Config.useWEBP) {
 				imageURL = ~/@jpeg$/.replace(imageURL, "@webp");
-				imageExt = "webp";
-			} else imageExt = "jpg";
+				imageExt ??= "webp";
+			} else {
+				imageExt ??= "jpg";
+			}
 			
-			var imageRel = Config.prefix + name.appendIndex(images.length) + "." + imageExt;
+			var imageRel = Config.prefix + name.appendIndex(images.length).appendExtension(imageExt);
 			var imageFull = Config.outDir + "/" + imageRel;
 			if (!CURL.downloadImage(imageURL, imageFull)) continue;
 			

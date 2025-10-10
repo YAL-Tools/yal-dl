@@ -1,5 +1,7 @@
 # YAL's social media downloader
 
+**Quick links:** [documentation](https://yal-tools.github.io/yal-dl/)
+
 ## Preparations
 
 You'll need to have a vague understanding of what a "command prompt" or a "terminal" is.
@@ -9,9 +11,11 @@ You'll need to have a vague understanding of what a "command prompt" or a "termi
 2.	Install [CURL](https://curl.se/) if you don't have it yet.\
 	CURL is included with most operating systems these days,
 	see if running `curl --version` in a command prompt/terminal finds the app.
-3.	Download this repository.  
+3.	Some image-related features (like resizing or thumbnail generation) use [ImageMagick](https://imagemagick.org/).\
+	You might install it if you intend to use those or just in case.
+4.	Download this repository.  
 	That's ❮❯ Code ➜ Download ZIP, or "clone" it if you know Git
-4.	If you have downloaded a ZIP, extract it somewhere.
+5.	If you have downloaded a ZIP, extract it somewhere.
 
 ## How to use
 
@@ -73,6 +77,9 @@ but do not like doing so themselves:
 	They also ignore the logged-in-only rules, as if that has ever stopped anyone.
 -	Bluesky can also serve you WEBPs or *slightly lossy* PNGs if you ask nicely.\
 	(change `@jpeg` at the end of a URL to `@webp` or `@png`)
+-	Isn't it kind of quirky that social media put usernames in `og:title`?\
+	Like if you supply a news article, image most likely relates to `og:title`,
+	but for social media you need to read `og:description` instead. And how do you know which one it is?
 -	You can hand-write rules for other websites, but it is work (on average).
 
 ## Considerations
@@ -103,4 +110,4 @@ If all is well, `bin/yal-dl.js` will be updated.
 - An option to include post text in Markdown output mode?
 - Add permalink to EXIF metadata (needs IM)
 - An option to use `<img>` with width/height to avoid layouts reflows
-- [fxReddit](https://github.com/MinnDevelopment/fxreddit)?
+- [fxReddit](https://github.com/MinnDevelopment/fxreddit), ddinstagram?

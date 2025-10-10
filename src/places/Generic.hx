@@ -22,10 +22,13 @@ class Generic {
 			default: name = ctx.url.sanitizeName();
 		}
 		
+		ctx.postText = html.getMeta("description")[0];
+		
 		var imageAltTexts = html.getMeta("og:image:alt");
 		var imageCount = 0;
 		for (i => imageURL in html.getMeta("og:image")) {
-			var imageRel = Config.prefix + name.appendIndex(imageCount).appendExtensionOf(imageURL, "jpg");
+			var imageExt = Config.imageExt ?? imageURL.urlExtension() ?? "jpg";
+			var imageRel = Config.prefix + name.appendIndex(imageCount).appendExtension(imageExt);
 			var imageFull = Config.outDir + "/" + imageRel;
 			//
 			if (CURL.downloadImage(imageURL, imageFull)) {
@@ -37,7 +40,8 @@ class Generic {
 		
 		var videoCount = 0;
 		for (videoURL in html.getMeta("og:video")) {
-			var videoRel = Config.prefix + name.appendIndex(videoCount).appendExtensionOf(videoURL, "mp4");
+			var videoExt = videoURL.urlExtension() ?? "mp4";
+			var videoRel = Config.prefix + name.appendIndex(videoCount).appendExtension(videoExt);
 			var videoFull = Config.outDir + "/" + videoRel;
 			//
 			if (CURL.download(videoURL, videoFull)) {

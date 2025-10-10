@@ -60,6 +60,9 @@ CURL.download = function(url,out) {
 	if(Config.verbose) {
 		console.info("Downloading \"" + url + "\"");
 	}
+	if(Config.verbose) {
+		console.info("-> \"" + out + "\"...");
+	}
 	var cachePath = Config.cache ? haxe_io_Path.join([Config.cacheDir,Tools.sanitizeName(url)]) : null;
 	if(cachePath != null) {
 		if(sys_FileSystem.exists(cachePath)) {
@@ -69,9 +72,6 @@ CURL.download = function(url,out) {
 			sys_io_File.copy(cachePath,out);
 			return true;
 		}
-	}
-	if(Config.verbose) {
-		console.info("-> \"" + out + "\"... ");
 	}
 	var curl = CURL.spawnCURL(["--location",url,"--output",out]);
 	if(curl.error != null) {
@@ -110,6 +110,12 @@ Config.ready = function() {
 	Config.cacheDir = haxe_io_Path.join([programDir,"cache"]);
 	if(Config.cache && !sys_FileSystem.exists(Config.cacheDir)) {
 		sys_FileSystem.createDirectory(Config.cacheDir);
+	}
+	if(StringTools.endsWith(Config.prefix,"/") || StringTools.endsWith(Config.prefix,"\\")) {
+		var prefixDir = Config.outDir + "/" + Config.prefix.substring(0,Config.prefix.length - 1);
+		if(!sys_FileSystem.exists(prefixDir)) {
+			sys_FileSystem.createDirectory(prefixDir);
+		}
 	}
 };
 var Console = {};
@@ -171,6 +177,7 @@ var FetchCtx = function(url) {
 	this.imageLines = [];
 	this.noPage = false;
 	this.badURL = false;
+	this.postText = null;
 	this.lines = [];
 	this.isPixels = false;
 	this.url = url;
@@ -198,7 +205,7 @@ FetchCtx.prototype = {
 				var wantResize = false;
 				if(Config.maxSize > 0) {
 					var size = FileTools.getSize(imageFull);
-					haxe_Log.trace(imageFull,{ fileName : "src/FetchCtx.hx", lineNumber : 51, className : "FetchCtx", methodName : "addImage", customParams : [size / 1024,maxSize / 1024]});
+					haxe_Log.trace(imageFull,{ fileName : "src/FetchCtx.hx", lineNumber : 52, className : "FetchCtx", methodName : "addImage", customParams : [size / 1024,maxSize / 1024]});
 					wantResize = size > maxSize;
 				}
 				if(!wantResize && (Config.maxWidth > 0 || Config.maxHeight > 0)) {
@@ -265,7 +272,16 @@ FetchCtx.prototype = {
 				}
 			} while(false);
 		}
-		var text = Config.markdown ? "[![" + alt + "](" + thumbRel + ")](" + imageRel + ")" : imageRel;
+		var text;
+		if(Config.markdown) {
+			if(Config.mdLinkImages || Config.thumbSize != null) {
+				text = "[![" + alt + "](" + thumbRel + ")](" + imageRel + ")";
+			} else {
+				text = "![" + alt + "](" + imageRel + ")";
+			}
+		} else {
+			text = imageRel;
+		}
 		this.lines.push(text);
 		this.imageLines.push(text);
 	}
@@ -372,11 +388,12 @@ Magick.createThumb = function(imageRel,imageFull) {
 	if(Config.verbose) {
 		console.info("Generating a thumbnail for \"" + imageRel + "\"");
 	}
-	var ext = Config.useWEBP ? "webp" : "jpg";
-	var suffix = Config.sep + ("th." + ext);
+	var tmp = Config.imageExt;
+	var thumbExt = tmp != null ? tmp : Config.useWEBP ? "webp" : "jpg";
+	var suffix = Config.sep + Tools.appendExtension("th",thumbExt);
 	var thumbFull = haxe_io_Path.withoutExtension(imageFull) + suffix;
 	var thumbRel = haxe_io_Path.withoutExtension(imageRel) + suffix;
-	var proc = Magick.run([imageFull,"-resize",thumbSize + ">","-quality",Std.string(Config.quality),thumbFull]);
+	var proc = Magick.run([imageFull,"-resize",thumbSize + ">","-quality",Std.string(Config.quality),(Config.useWEBP ? "WEBP:" : "JPG:") + thumbFull]);
 	if(proc.error != null) {
 		return null;
 	}
@@ -411,7 +428,7 @@ Main.procURL = function(url) {
 	case "bskx.app":case "bsky.app":case "bskyx.app":case "fxbsky.app":
 		places_BSky.get(ctx);
 		break;
-	case "fixupx.com":case "fxtwitter.com":case "vxtwitter.com":case "x.com":
+	case "fixupx.com":case "fxtwitter.com":case "twitter.com":case "vxtwitter.com":case "x.com":
 		places_Twitter.get(ctx);
 		break;
 	default:
@@ -436,8 +453,9 @@ Main.main = function() {
 	var inPath = null;
 	var outPath = null;
 	while(argi < args.length) {
+		var argName = args[argi];
 		var del;
-		switch(args[argi]) {
+		switch(argName) {
 		case "--cache":
 			Config.cache = true;
 			del = 1;
@@ -453,6 +471,13 @@ Main.main = function() {
 			break;
 		case "--dir":
 			Config.outDir = args[argi + 1];
+			del = 2;
+			break;
+		case "--image-ext":
+			Config.imageExt = args[argi + 1];
+			if(Config.imageExt == ".") {
+				Config.imageExt = "";
+			}
 			del = 2;
 			break;
 		case "--in":
@@ -481,12 +506,8 @@ Main.main = function() {
 			del = 2;
 			break;
 		case "--max-height":
-			var def1 = 0;
-			if(def1 == null) {
-				def1 = 0;
-			}
 			var tmp3 = Std.parseInt(args[argi + 1]);
-			Config.maxWidth = tmp3 != null ? tmp3 : def1;
+			Config.maxWidth = tmp3 != null ? tmp3 : 0;
 			del = 2;
 			break;
 		case "--max-size":
@@ -515,16 +536,19 @@ Main.main = function() {
 			del = 2;
 			break;
 		case "--max-width":
-			var def2 = 0;
-			if(def2 == null) {
-				def2 = 0;
-			}
 			var tmp4 = Std.parseInt(args[argi + 1]);
-			Config.maxWidth = tmp4 != null ? tmp4 : def2;
+			Config.maxWidth = tmp4 != null ? tmp4 : 0;
 			del = 2;
+			break;
+		case "--md-img-links":
+			Config.mdLinkImages = true;
+			del = 1;
 			break;
 		case "--out":
 			outPath = args[argi + 1];
+			if(haxe_io_Path.extension(outPath).toLowerCase() == "md") {
+				Config.markdown = true;
+			}
 			del = 2;
 			break;
 		case "--plain":
@@ -539,6 +563,10 @@ Main.main = function() {
 			Config.thumbSize = args[argi + 1];
 			del = 2;
 			break;
+		case "--user-agent":
+			Config.userAgent = args[argi + 1];
+			del = 2;
+			break;
 		case "--verbose":
 			Config.verbose = true;
 			del = 1;
@@ -548,6 +576,10 @@ Main.main = function() {
 			del = 1;
 			break;
 		default:
+			if(StringTools.startsWith(argName,"--")) {
+				process.stdout.write(Std.string("" + argName + " is not a known argument."));
+				process.stdout.write("\n");
+			}
 			del = 0;
 		}
 		if(del > 0) {
@@ -572,17 +604,18 @@ Main.main = function() {
 			if(Main.rxURL.match(line)) {
 				var url = line;
 				if(header != null && header != "") {
-					if(Config.markdown) {
+					if(markdown) {
 						outLines.push("## [" + header + "](" + url + ")");
 					} else {
 						outLines.push(header);
-						outLines.push(url);
 					}
 					header = null;
 				} else if(markdown) {
-					outLines.push("<!-- " + url + " -->");
-				} else {
-					outLines.push(url);
+					if(markdown) {
+						outLines.push("<!-- " + url + " -->");
+					} else {
+						outLines.push(url);
+					}
 				}
 				var ctx = Main.procURL(url);
 				if(ctx.lines.length != 0) {
@@ -634,12 +667,16 @@ Main.main = function() {
 			}
 		}
 	}
+	if(args.length == 0 && inPath == null) {
+		process.stdout.write("No inputs!");
+		process.stdout.write("\n");
+	}
 	var outText = outLines.join("\r\n");
 	if(outPath != null) {
 		js_node_Fs.writeFileSync(outPath,outText);
 		process.stdout.write("OK!");
 		process.stdout.write("\n");
-	} else {
+	} else if(outLines.length > 0) {
 		process.stdout.write(Std.string(outText));
 		process.stdout.write("\n");
 	}
@@ -665,6 +702,15 @@ StringTools.htmlUnescape = function(s) {
 StringTools.startsWith = function(s,start) {
 	if(s.length >= start.length) {
 		return s.lastIndexOf(start,0) == 0;
+	} else {
+		return false;
+	}
+};
+StringTools.endsWith = function(s,end) {
+	var elen = end.length;
+	var slen = s.length;
+	if(slen >= elen) {
+		return s.indexOf(end,slen - elen) == slen - elen;
 	} else {
 		return false;
 	}
@@ -877,12 +923,9 @@ Tools.appendIndex = function(str,ind) {
 		return str;
 	}
 };
-Tools.appendExtensionOf = function(str,path,def) {
-	var ext = Tools.urlExtension(path);
-	if(ext != "") {
+Tools.appendExtension = function(str,ext) {
+	if(ext != null && ext != "") {
 		return str + "." + ext;
-	} else if(def != null) {
-		return str + "." + def;
 	} else {
 		return str;
 	}
@@ -892,7 +935,12 @@ Tools.urlExtension = function(url) {
 	if(qAt >= 0) {
 		url = url.substring(0,qAt);
 	}
-	return haxe_io_Path.extension(url).toLowerCase();
+	var ext = haxe_io_Path.extension(url).toLowerCase();
+	if(ext != "") {
+		return ext;
+	} else {
+		return null;
+	}
 };
 Tools.getMatches = function(rx,n) {
 	var _g = [];
@@ -1369,19 +1417,23 @@ places_BSky.get = function(ctx,prev) {
 		++_g;
 		var _this_r = new RegExp("/img/feed_thumbnail/","".split("u").join(""));
 		imageURL = imageURL.replace(_this_r,"/img/feed_fullsize/");
-		var imageExt;
+		var imageExt = Config.imageExt;
 		if(Config.lossless) {
 			var _this_r1 = new RegExp("@jpeg$","".split("u").join(""));
 			imageURL = imageURL.replace(_this_r1,"@png");
-			imageExt = "png";
+			if(imageExt == null) {
+				imageExt = "png";
+			}
 		} else if(Config.useWEBP) {
 			var _this_r2 = new RegExp("@jpeg$","".split("u").join(""));
 			imageURL = imageURL.replace(_this_r2,"@webp");
-			imageExt = "webp";
-		} else {
+			if(imageExt == null) {
+				imageExt = "webp";
+			}
+		} else if(imageExt == null) {
 			imageExt = "jpg";
 		}
-		var imageRel = Config.prefix + Tools.appendIndex(name,images.length) + "." + imageExt;
+		var imageRel = Config.prefix + Tools.appendExtension(Tools.appendIndex(name,images.length),imageExt);
 		var imageFull = Config.outDir + "/" + imageRel;
 		if(!CURL.download(imageURL,imageFull)) {
 			continue;
@@ -1450,6 +1502,7 @@ places_Generic.get = function(ctx) {
 	default:
 		name = Tools.sanitizeName(ctx.url);
 	}
+	ctx.postText = Tools.getMeta(html,"description")[0];
 	var imageAltTexts = Tools.getMeta(html,"og:image:alt");
 	var imageCount = 0;
 	var _g_current = 0;
@@ -1459,7 +1512,10 @@ places_Generic.get = function(ctx) {
 		var _g_key = _g_current++;
 		var i = _g_key;
 		var imageURL = _g_value;
-		var imageRel = Config.prefix + Tools.appendExtensionOf(Tools.appendIndex(name,imageCount),imageURL,"jpg");
+		var tmp = Config.imageExt;
+		var tmp1 = tmp != null ? tmp : Tools.urlExtension(imageURL);
+		var imageExt = tmp1 != null ? tmp1 : "jpg";
+		var imageRel = Config.prefix + Tools.appendExtension(Tools.appendIndex(name,imageCount),imageExt);
 		var imageFull = Config.outDir + "/" + imageRel;
 		if(CURL.download(imageURL,imageFull)) {
 			var thumbRel = Magick.createThumb(imageRel,imageFull);
@@ -1473,7 +1529,9 @@ places_Generic.get = function(ctx) {
 	while(_g < _g1.length) {
 		var videoURL = _g1[_g];
 		++_g;
-		var videoRel = Config.prefix + Tools.appendExtensionOf(Tools.appendIndex(name,videoCount),videoURL,"mp4");
+		var tmp = Tools.urlExtension(videoURL);
+		var videoExt = tmp != null ? tmp : "mp4";
+		var videoRel = Config.prefix + Tools.appendExtension(Tools.appendIndex(name,videoCount),videoExt);
 		var videoFull = Config.outDir + "/" + videoRel;
 		if(CURL.download(videoURL,videoFull)) {
 			ctx.addVideo(videoURL,null,"");
@@ -1501,6 +1559,7 @@ places_Twitter.get = function(ctx) {
 		process.stdout.write("\n");
 		return;
 	}
+	ctx.postText = tweet.text;
 	var name = ["twitter",tweet.user_screen_name,tweet.tweetID].join(Config.sep);
 	var media = tweet.media_extended;
 	if(places_Twitter.get_rxMediaID.match(ctx.pathname)) {
@@ -1525,18 +1584,19 @@ places_Twitter.get = function(ctx) {
 		if(qAt >= 0) {
 			url = url.substring(0,qAt);
 		}
-		var itemExt = haxe_io_Path.extension(url).toLowerCase();
-		if(itemExt == "") {
-			switch(item.type) {
-			case "gif":case "video":
-				itemExt = "mp4";
-				break;
-			default:
-				itemExt = "jpg";
-			}
+		var itemExt;
+		switch(item.type) {
+		case "gif":case "video":
+			var tmp = Tools.urlExtension(url);
+			itemExt = tmp != null ? tmp : "mp4";
+			break;
+		default:
+			var tmp1 = Config.imageExt;
+			var tmp2 = tmp1 != null ? tmp1 : Tools.urlExtension(url);
+			itemExt = tmp2 != null ? tmp2 : "jpg";
 		}
 		var itemName = Tools.appendIndex(name,itemInd);
-		var itemRel = Config.prefix + itemName + ("." + itemExt);
+		var itemRel = Config.prefix + Tools.appendExtension(itemName,itemExt);
 		var itemFull = Config.outDir + "/" + itemRel;
 		var isVideo = item.type == "gif" || item.type == "video";
 		if(isVideo) {
@@ -1557,12 +1617,12 @@ places_Twitter.get = function(ctx) {
 			if(!CURL.download(thumbURL,thumbFull)) {
 				thumbRel = null;
 			}
-			var tmp = item.altText;
-			ctx.addVideo(itemRel,tmp != null ? tmp : "",thumbRel);
+			var tmp3 = item.altText;
+			ctx.addVideo(itemRel,tmp3 != null ? tmp3 : "",thumbRel);
 		} else {
 			var thumbRel1 = Magick.createThumb(itemRel,itemFull);
-			var tmp1 = item.altText;
-			ctx.addImage(itemRel,itemFull,thumbRel1,tmp1 != null ? tmp1 : "");
+			var tmp4 = item.altText;
+			ctx.addImage(itemRel,itemFull,thumbRel1,tmp4 != null ? tmp4 : "");
 		}
 	}
 };
@@ -1753,7 +1813,7 @@ Config.cache = false;
 Config.outDir = ".";
 Config.prefix = "";
 Config.markdown = false;
-Config.magick = false;
+Config.mdLinkImages = false;
 Config.lossless = false;
 Config.useWEBP = false;
 Config.quality = 80;

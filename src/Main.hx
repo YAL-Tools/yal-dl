@@ -23,7 +23,7 @@ class Main {
 		switch (ctx.hostname) {
 			case "bsky.app", "fxbsky.app", "bskyx.app", "bskx.app":
 				BSky.get(ctx);
-			case "x.com", "vxtwitter.com", "fxtwitter.com", "fixupx.com":
+			case "x.com", "twitter.com", "vxtwitter.com", "fxtwitter.com", "fixupx.com":
 				Twitter.get(ctx);
 			default:
 				Generic.get(ctx);
@@ -53,19 +53,34 @@ class Main {
 			inline function int(def = 0, ofs = 0) {
 				return Std.parseInt(args[argi + (1 + ofs)]) ?? def;
 			}
-			var del = switch (args[argi]) {
-				case "--in": inPath = str(); 2;
-				case "--out": outPath = str(); 2;
+			var argName = args[argi];
+			var del = switch (argName) {
+				case "--in": {
+					inPath = str();
+					2;
+				}
+				case "--out": {
+					outPath = str();
+					if (Path.extension(outPath).toLowerCase() == "md") Config.markdown = true;
+					2;
+				}
 				case "--prefix": Config.prefix = str(); 2;
 				case "--dir": Config.outDir = str(); 2;
+				//
 				case "--md", "--markdown": Config.markdown = true; 1;
 				case "--plain": Config.markdown = false; 1;
+				//
+				case "--md-img-links": Config.mdLinkImages = true; 1;
+				//
 				case "--cache": Config.cache = true; 1;
 				case "--png", "--lossless": Config.lossless = true; 1;
 				case "--webp": Config.useWEBP = true; 1;
 				case "--verbose": Config.verbose = true; 1;
 				case "--thumb": Config.thumbSize = str(); 2;
+				//
+				case "--user-agent": Config.userAgent = str(); 2;
 				case "--delay": Config.delay = int(0); 2;
+				//
 				case "--max-size": {
 					var snip = str().toLowerCase();
 					static var rxSize = ~/^([\d,.]+)\s*([km]?b?)?$/;
@@ -85,8 +100,8 @@ class Main {
 					} else Sys.println("Expected #KB/#MB for --max-size!");
 					2;
 				};
-				case "--max-width": Config.maxWidth = int(0); 2;
-				case "--max-height": Config.maxWidth = int(0); 2;
+				case "--max-width": Config.maxWidth = int(); 2;
+				case "--max-height": Config.maxWidth = int(); 2;
 				case "--max-dims", "--max-dimensions": {
 					static var rxDims = ~/^(\d+)x(\d+)$/;
 					if (rxDims.match(str())) {
@@ -97,7 +112,17 @@ class Main {
 					}
 					2;
 				};
-				default: 0;
+				case "--image-ext": {
+					Config.imageExt = str();
+					if (Config.imageExt == ".") Config.imageExt = "";
+					2;
+				};
+				default: {
+					if (argName.startsWith("--")) {
+						Sys.println('$argName is not a known argument.');
+					}
+					0;
+				};
 			}
 			if (del > 0) {
 				args.splice(argi, del);
@@ -126,14 +151,16 @@ class Main {
 				if (rxURL.match(line)) {
 					var url = line;
 					if (header != null && header != "") {
-						if (Config.markdown) {
+						if (markdown) {
 							addLine('## [$header]($url)');
 						} else {
 							addLine(header);
-							addLine(url);
+							//addLine(url);
 						}
 						header = null;
-					} else addNote(url);
+					} else {
+						if (markdown) addNote(url);
+					}
 					//
 					var ctx = procURL(url);
 					if (ctx.ready) {
@@ -154,12 +181,15 @@ class Main {
 				for (line in ctx.lines) addLine(line);
 			} else addNote(ctx.getError());
 		}
+		if (args.length == 0 && inPath == null) {
+			Sys.println("No inputs!");
+		}
 		//
 		var outText = outLines.join("\r\n");
 		if (outPath != null) {
 			File.saveContent(outPath, outText);
 			Sys.println("OK!");
-		} else {
+		} else if (outLines.length > 0) {
 			Sys.println(outText);
 		}
 	}

@@ -37,12 +37,9 @@ class Tools {
 		return ind > 0 ? str + Config.sep + ind : str;
 	}
 	
-	public static function appendExtensionOf(str:String, path:String, ?def:String) {
-		var ext = urlExtension(path);
-		if (ext != "") {
+	public static function appendExtension(str:String, ext:String) {
+		if (ext != null && ext != "") {
 			return str + "." + ext;
-		} else if (def != null) {
-			return str + "." + def;
 		} else return str;
 	}
 	
@@ -50,7 +47,8 @@ class Tools {
 		var qAt = url.indexOf("?");
 		if (qAt >= 0) url = url.substring(0, qAt);
 		
-		return Path.extension(url).toLowerCase();
+		var ext = Path.extension(url).toLowerCase();
+		return ext != "" ? ext : null;
 	}
 	
 	public static function getMatches(rx:EReg, n:Int) {

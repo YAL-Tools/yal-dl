@@ -1,0 +1,169 @@
+```set template default.html```
+```set navmenu 1```
+```set inc_dmd ./inc.dmd```
+%[inc_dmd]
+```setmd md
+[Markdown output mode](md)
+```
+```setmd intro
+This is documentation for [YAL's social media downloader](https://github.com/YAL-Tools/yal-dl).
+```
+#[Input/output](inout) {
+	#[--dir <path>]() {
+		This is where the downloaded media files will be placed.
+		
+		By default, it is the working directory.
+	}
+	#[--prefix <snip>]() {
+		Prepends the snippet to media file names, so if you did `--prefix dl-`,
+		instead of
+		```dl
+		bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o.jpg
+		```
+		you would have
+		```dl
+		dl-bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o.jpg
+		```
+		More importantly, however, setting this to `subdir/` will put media files
+		in a subdirectory, which is handy when using the %[md].
+	}
+	---
+	#[--out <path>]() {
+		Places links/text/markdown in a file instead of printing it to output.
+		
+		If the file extension is `md`, enables %[md].
+	}
+	#[--in <path>]() {
+		Takes inputs from a text file instead of command-line parameters.
+		
+		Lines with links will be replaced by file(s) from that link.\
+		Other lines will be preserved.
+		
+		So, for example, if you had `links.txt` with the following
+		```dl
+		tiny beast
+		https://bsky.app/profile/yellowafterlife.bsky.social/post/3lxcwsgrras27
+		
+		piglet
+		https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwe7nxugks2w
+		https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwh6s7axvc2o
+		```
+		and did `node yal-dl.js --in links.txt`, the output would be
+		```dl
+		tiny beast
+		bsky=yellowafterlife.bsky.social=3lxcwsgrras27.jpg
+		
+		piglet
+		bsky=yellowafterlife.bsky.social=3lwe7nxugks2w.jpg
+		bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o.jpg
+		bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o=1.jpg
+		```
+		
+		In %[md], a line of text immediately before a link will be turned
+		into a header, so the output would rather be
+		
+		```md
+		## [tiny beast](https://bsky.app/profile/yellowafterlife.bsky.social/post/3lxcwsgrras27)
+		![](bsky=yellowafterlife.bsky.social=3lxcwsgrras27.jpg)
+		
+		## [piglet](https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwe7nxugks2w)
+		![](bsky=yellowafterlife.bsky.social=3lwe7nxugks2w.jpg)
+		<!-- https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwh6s7axvc2o -->
+		![](bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o.jpg)
+		![](bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o=1.jpg)
+		```
+		and that's pretty good for organizing related images.
+	}
+}
+#[Markdown mode](md) {
+	#[--markdown, --md]() {
+		Outputs markdown instead of plain text.
+	}
+	#[--thumb <width x height>]() {
+		Generates thumbnails in specified dimensions (_at most_)
+		to use in markdown.
+		
+		This is desirable if you have _a lot_ of potentially large images in one document
+		and this is starting to take toll at document load speed.
+		
+		That is, if you're doing `--thumb 320x240`
+		and an image is 2000x200, it'll be resized to 240x240.
+		
+		Markdown output will change from
+		```md
+		![](cool.jpg)
+		```
+		to
+		```md
+		[![](cool=th.jpg)](cool.jpg)
+		```
+		
+		If you use this option without targeting Markdown,
+		this will generate thumbnail images but will not change the outputs;
+		
+		Thumbnails are in JPEG format by default, or WEBP if you use [--webp].
+	}
+	#[--md-img-links]() {
+		Makes images link to original files even when not using the thumbnails, so instead of
+		```md
+		![](cool.jpg)
+		```
+		you would have
+		```md
+		[![](cool.jpg)](cool.jpg)
+		```
+	}
+}
+#[Image-specific](image) {
+	#[--max-dims <width x height>]() {
+		Resizes images if they exceed this size.
+		
+		For example, `--max-dims 2000x2000`.
+	}
+	#[--max-width <width>, --max-height <height>]() {
+		Like above, but for one side.
+	}
+	#[--max-size <size>]() {
+		Specifies maximum desired size per image.
+		
+		For example, `--max-size 150KB` or `--max-size 1.5MB`.
+	}
+	#[--webp]() {
+		Converts images to WEBP when opportunity arises and prefers downloading WEBPs from BlueSky.
+	}
+	#[--lossless, --png]() {
+		Prefers downloading the (slightly lossy) PNGs from BlueSky.
+	}
+	#[--image-ext <ext>]() {
+		Uses the specified file extension for images regardless of what the actual file format is.
+		For example, `--image-ext jpg`.
+		
+		Note that file extensions may occasionally not match the contents even without this parameter
+		if OpenGraph says that the image is JPEG but the downloaded image is a WEBP, for example.
+	}
+}
+#[Networking](net) {
+	#[--user-agent <snip>](user-agent) {
+		Situationally useful if a website returns different OpenGraph fields depending on who's asking.
+	}
+	#[--delay <ms>](delay) {
+		Waits this much between HTTP requests. Such as `--delay 250` to wait a quarter-second.
+		
+		If you are downloading a lot of media files at once,
+		you might want to set this to some value so that you don't get rate-limited. 
+	}
+}
+#[Debug/development](debug) {
+	#[--verbose]() {
+		Shows detailed information about what's happening at each step of the way.
+	}
+	#[--run-tests]() {
+		Makes sure that the application's basic features are all functional
+		by requesting a handful of my postings from different social networks.
+	}
+	#[--cache]() {
+		Caches pages and resources in the `cache/` directory.
+		
+		This is used when running tests so that resources aren't re-requested every time.
+	}
+}

@@ -1,0 +1,698 @@
+<!DOCTYPE HTML><html lang="en"><head>
+<meta charset="UTF-8">
+<title>untitled</title>
+<meta name="viewport" content="width=device-width" />
+<meta name="livenode" content="#doc" />
+<meta property="theme-color" content="#FFF037" />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="en_us" />
+<meta property="og:site_name" content="YellowAfterlife" />
+<meta property="og:title" content="untitled" />
+<script type="text/javascript">
+if (document.location.host == "yal.cc" && location.protocol == "http:") {
+	document.location.protocol = "https:";
+}
+</script>
+<style type="text/css">body, #doc tt, #doc code {
+	font: 15px 'Open Sans', sans-serif;
+	line-height: 1.35;
+}
+body {
+	margin: 0;
+}
+.main {
+	width: 100%;
+	min-height: 100%;
+	min-height: 100vh;
+	background-color: #f5f7f9;
+}
+.page {
+	max-width: 656px;
+	background: #ffffff;
+	margin: 0 auto;
+	padding: 8px;
+	min-height: 100%;
+	min-height: 100vh;
+	box-sizing: border-box;
+}
+.page, .navmenu {
+	box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+}
+.page > p:first-child {
+	margin-top: 0;
+}
+#doc, #doc ul, #doc ol {
+	padding-left: 0;
+	margin: 0;
+}
+#doc blockquote { margin: 0.5em 0; padding: 0; }
+#doc article > ul, #doc li > ul,
+#doc article > ol, #doc li > ol {
+	padding-left: 20px;
+}
+#doc article ul li {
+	list-style: disc;
+	list-style-image: url('data:image/svg+xml;base256,<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="20px" height="1em" viewBox="0 0 20px 1em"><circle cx="17px" cy="0.675em" r="2px"/></svg>'); 
+}
+
+#doc header {
+	margin: 0;
+	font-weight: 700;
+	font-size: 100%;
+	color: #458;
+	border-left: 2px solid #f3f3f3;/* #f9f9f9*/
+	padding-left: 4px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	display: flex;
+	align-items: center;
+}
+#doc header a {
+	outline: none;
+	text-decoration: none;
+	color: #458;
+	word-break: break-word;
+}
+#doc header::before {
+	display: inline-block;
+	content: "+";
+	font: 12px monospace;
+	border: 1px solid #458;
+	line-height: 11px;
+	height: 11px;
+	width: 11px;
+	text-align: center;
+	border-radius: 50%;
+	margin-right: 4px;
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+#doc section.open > header::before {
+	content: "-";
+}
+#doc section.empty > header::before {
+	content: " "; /*"·"*/
+}
+#doc section.link > header::before {
+	content: "→";
+}
+
+#doc header:hover,
+#doc .sticky-side:hover {
+	border-left-color: #E7E7E7; /* rgba(0, 0, 0, 0.05) */
+	background: rgba(0, 0, 0, 0.048);
+}
+#doc header .ret-arrow {
+	font-weight: normal;
+	margin: 0 0.1em;
+}
+
+#doc a.broken {
+	color: red;
+}
+#doc p, .intro p {
+	margin: 0;
+}
+#doc p + p, .intro p + p, #doc p.pad, .display-controls {
+	margin-top: 0.5em;
+}
+#doc img {
+	max-width: 100%;
+}
+#doc h3 {
+	margin: 0.25em 0;
+	font-size: 125%;
+	font-weight: normal;
+	border-bottom: 1px solid #ccc;
+}
+
+#doc article,
+#doc ul,
+#doc ol,
+#doc blockquote {
+	padding-left: 20px;
+	border-left: 2px solid #f3f3f3;
+}
+#doc article {
+	padding-top: 0.25em;
+	padding-bottom: 0.5em;
+	position: relative;
+}
+#doc .sticky-side {
+	position: absolute;
+	left: -2px;
+	top: 0;
+	bottom: 1px;
+	width: 20px;
+	writing-mode: vertical-rl;
+	font-size: 85%;
+	text-orientation: sideways;
+	/*transform: rotate(0.05deg);*/
+}
+#doc .sticky-side,
+#doc .sticky-side:visited {
+	color: rgba(0, 0, 0, 0.3);
+}
+#doc .sticky-side > span {
+	display: inline-block;
+	position: sticky;
+	left: 0;
+	top: 0;
+	padding: 0.3em 0;
+	max-height: 100%;
+	box-sizing: border-box;
+	overflow: hidden;
+	white-space: nowrap;
+}
+#doc tt {
+	font-weight: bold;
+}
+#doc code {
+	display: inline-block;
+	background: #FFFBE4;
+	font-family: Consolas, Ubuntu Mono, Dejavu Sans Mono, Lucida Console, monospace;
+	font-weight: normal;
+	font-size: 12px;
+	line-height: 16px;
+	padding: 0 2px;
+	border: 1px solid #E6E0C4;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	max-width: 100%;
+	word-break: break-word;
+}
+
+#doc table {
+	border-spacing: 0;
+	color: currentColor;
+}
+#doc table, #doc table td, #doc table th {
+	border: 1px solid #f3f3f3;
+}
+#doc table td, #doc table th {
+	padding: 0.1em 0.5em;
+}
+#doc pre {
+	font-family: Consolas, Dejavu Sans Mono, Segoe UI Mono, Ubuntu Mono, Lucida Console, monospace;
+	font-size: 9pt;
+	line-height: 1.25;
+	background: white;
+	padding: 4px 2px 4px 10px;
+	margin: 0;
+	-moz-tab-size: 4;
+	tab-size: 4;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+#doc pre a {
+	text-decoration: none;
+}
+#doc pre a:hover {
+	text-decoration: underline;
+}
+#doc abbr[title] {
+	text-decoration: underline;
+	-webkit-text-decoration-color: #bbb;
+	text-decoration-color: #bbb;
+	-webkit-text-decoration-style: double;
+	text-decoration-style: double;
+}
+#doc hr {
+	margin: 0.5em 0;
+	margin-right: 1em;
+	border: 0;
+	border-top: 2px dashed #f3f3f3;
+}
+#doc section + hr {
+	margin: 0;
+	height: 1em;
+	border: 1px solid #f3f3f3;
+	border-width: 1px 0 1px 0;
+}
+#doc section {
+	border-top: 1px solid #f3f3f3;
+	margin-top: 0.3em;
+}
+#doc section:first-child {
+	margin-top: 0em;
+}
+#doc section:last-child {
+	border-bottom: 1px solid #f3f3f3;
+}
+#doc section + section, #doc hr + section {
+	border-top: 0;
+	margin-top: 0;
+}
+#doc section + p {
+	border-top: 1px solid #f3f3f3;
+	padding-top: 0.3em;
+}
+/* delay display until load */
+#doc[ready] section:not(.open) > article {
+	display: none;
+}</style>
+<style type="text/css" id="nav_menu">.main {
+	display: flex;
+	flex-direction: row-reverse;
+	height: 100%;
+	height: 100vh;
+}
+.main-center {
+	flex-grow: 1;
+	height: 100%;
+	height: 100vh;
+	overflow: auto;
+}
+.navmenu {
+	width: 250px;
+	height: 100%;
+	height: 100vh;
+	box-sizing: border-box;
+	overflow-x: hidden;
+	overflow-y: auto;
+	resize: horizontal;
+	margin-right: 10px;
+	
+	word-break: break-word;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	
+	background: white;
+	border: 0.3em solid white;
+}
+.navmenu ul {
+	margin: 0;
+	padding-left: 1.5em;
+}
+.navmenu a {
+	overflow: hidden;
+}
+@media (max-width: 760px) {
+	.navmenu {
+		display: none;
+	}
+}</style>
+<meta name="livenode2" content=".main > nav" />
+<style type="text/css" id="night_css">.main label[for="night"] {
+	cursor: pointer;
+}
+#night { display: none }
+#night:checked + .main {
+	background-color: #424242;
+}
+#night:checked + .main .page,
+#night:checked + .main .navmenu {
+	background-color: #1c1c1c;
+	border-color: #1c1c1c;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+	color: white;
+}
+#night:checked + .main a,
+#night:checked + .main a:visited,
+#night:checked + .main #doc header,
+#night:checked + .main label[for="night"] {
+	color: #9DEC76;
+}
+#night:checked + .main #doc header:before,
+#night:checked + .main #doc h3 {
+	border-color: #9DEC76
+}
+#night:checked + .main #doc header,
+#night:checked + .main #doc header:hover,
+#night:checked + .main #doc .sticky-side:hover,
+#night:checked + .main #doc article,
+#night:checked + .main #doc section,
+#night:checked + .main #doc section + p,
+#night:checked + .main #doc hr,
+#night:checked + .main #doc ul,
+#night:checked + .main #doc ol,
+#night:checked + .main #doc table,
+#night:checked + .main #doc table td,
+#night:checked + .main #doc table th
+{
+	border-color: rgba(205,225,255,0.1);
+}
+#night:checked + .main #doc header:hover,
+#night:checked + .main #doc .sticky-side:hover,
+#night:checked + .main #doc .asset:hover {
+	background: rgba(205,225,255,0.1);
+}
+#night:checked + .main article ul li {
+	list-style-image: url('data:image/svg+xml;base256,<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="20px" height="1em" viewBox="0 0 20px 1em"><circle cx="17px" cy="0.675em" r="2px" fill="white"/></svg>'); 
+}
+#night:checked + .main pre {
+	color: #cccccc;
+	background: #000000;
+	border: 1px solid #3E4757;
+}
+#night:checked + .main #doc code {
+	background-color: #000;
+	border-color: #5b7c9f;
+	color: white;
+}
+#night:checked + .main #doc .sticky-side,
+#night:checked + .main #doc .sticky-side:visited {
+	color: rgba(255, 255, 255, 0.3);
+}</style>
+<style type="text/css" id="print_css">@media print {
+	.main { background-color: transparent }
+	.display-controls { display: none; }
+	.page { width: 100%; box-shadow: none; }
+	#doc header::before,
+	#doc section.open header::before	{
+		content: "~";
+	}
+	#doc { display: inherit }
+	#doc section:not(.open) > article,
+	#doc[ready] section:not(.open) > article {
+		display: inherit;
+	}
+}</style>
+<noscript><style>#doc header::before {
+	content: "~";
+}
+#doc header:hover {
+	border-left-color: #f3f3f3;
+	background: inherit;
+}
+#doc { display: inherit }
+#doc section:not(.open) > article {
+	display: inherit;
+}</style></noscript>
+</head><body>
+<input type="checkbox" id="night" checked/>
+<div class="main ">
+<script type="text/javascript">(function() {
+	var night = document.getElementById("night");
+	var path = "docmd night mode";
+	var ls = window.localStorage;
+	var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+	if (ls) {
+		var item = ls.getItem(path);
+		night.checked = item ? item == "true" : dark;
+		night.onchange = function(_) {
+			ls.setItem(path, "" + night.checked);
+		};
+	} else night.checked = dark;
+})();</script>
+<div class="main-center">
+<main class="page">
+<section class="intro">
+This is documentation for <a href="https://github.com/YAL-Tools/yal-dl">YAL's social media downloader</a>.
+</section>
+<section class="display-controls">
+Click on sections to expand/collapse them.<br>Quick display controls:
+<a href="javascript:void(0)" onclick="opt_none(); return false">Categories</a>
+&middot; <a href="javascript:void(0)" onclick="opt_list(); return false">Sections</a>
+&middot; <a href="javascript:void(0)" onclick="opt_all(); return false">Everything</a>
+&middot; <a href="javascript:void(0)"><label for="night">Toggle night mode</label></a><br/>
+</section><section id="doc">
+<!--<doc--><p><p>
+
+<style>
+.main { background-color: #899FC6 }
+.page, .navmenu { box-shadow: 0 0 8px rgba(0, 0, 0, 0.3) }
+#night:checked + .main { background-color: #405070 }
+#night:checked + .main .page { background-color: #1A202D }
+</style>
+
+
+
+
+
+<style>
+#doc {
+	pre {
+		border: 1px solid #f3f3f3;
+	}
+	pre.md .header {
+		color: #005CC5;
+	}
+	pre.md .link-text {
+		color: #032F62;
+		text-decoration: underline;
+	}
+	pre a:not([href="javascript:void(0)"]) {
+		text-decoration: underline;
+	}
+	pre.md .comment {
+		color: #080;
+	}
+}
+#night:checked + .main #doc {
+	pre.md .header {
+		color: #D1F1A9;
+	}
+	pre.md .link-text {
+		color: white;
+	}
+	pre.md .comment {
+		color: #7285B7;
+	}
+}
+</style>
+
+
+
+
+</p><section><header id="inout"><a href="#inout" title="(permalink)">Input/output</a></header><article><a class="sticky-side" href="#inout" title="Input/output"><span>Input/output</span></a><section><header id="--dir-path"><a href="#--dir-path" title="(permalink)">--dir &lt;path&gt;</a></header><article><p>
+		This is where the downloaded media files will be placed.
+		</p><p>
+		By default, it is the working directory.
+	</p></article></section><section><header id="--prefix-snip"><a href="#--prefix-snip" title="(permalink)">--prefix &lt;snip&gt;</a></header><article><p>
+		Prepends the snippet to media file names, so if you did <code>--prefix dl-</code>,
+		instead of
+		</p><pre>
+<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o.jpg</a>
+</pre><p>
+		you would have
+		</p><pre>
+<a href="javascript:void(0)">dl-bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o.jpg</a>
+</pre><p>
+		More importantly, however, setting this to <code>subdir/</code> will put media files
+		in a subdirectory, which is handy when using the <a href="#md">Markdown output mode</a>.
+	</p></article></section><hr/><section><header id="--out-path"><a href="#--out-path" title="(permalink)">--out &lt;path&gt;</a></header><article><p>
+		Places links/text/markdown in a file instead of printing it to output.
+		</p><p>
+		If the file extension is <code>md</code>, enables <a href="#md">Markdown output mode</a>.
+	</p></article></section><section><header id="--in-path"><a href="#--in-path" title="(permalink)">--in &lt;path&gt;</a></header><article><p>
+		Takes inputs from a text file instead of command-line parameters.
+		</p><p>
+		Lines with links will be replaced by file(s) from that link.<br/>
+		Other lines will be preserved.
+		</p><p>
+		So, for example, if you had <code>links.txt</code> with the following
+		</p><pre>
+tiny beast
+<a href="https://bsky.app/profile/yellowafterlife.bsky.social/post/3lxcwsgrras27">https://bsky.app/profile/yellowafterlife.bsky.social/post/3lxcwsgrras27</a>
+
+piglet
+<a href="https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwe7nxugks2w">https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwe7nxugks2w</a>
+<a href="https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwh6s7axvc2o">https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwh6s7axvc2o</a>
+</pre><p>
+		and did <code>node yal-dl.js --in links.txt</code>, the output would be
+		</p><pre>
+tiny beast
+<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lxcwsgrras27.jpg</a>
+
+piglet
+<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lwe7nxugks2w.jpg</a>
+<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o.jpg</a>
+<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o=1.jpg</a>
+</pre><p>
+		In <a href="#md">Markdown output mode</a>, a line of text immediately before a link will be turned
+		into a header, so the output would rather be
+		</p><pre class="md">
+<span class="header">## [<span class="link-text">tiny beast</span>](<a href="https://bsky.app/profile/yellowafterlife.bsky.social/post/3lxcwsgrras27">https://bsky.app/profile/yellowafterlife.bsky.social/post/3lxcwsgrras27</a>)</span>
+![<span class="link-text"></span>](<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lxcwsgrras27.jpg</a>)
+
+<span class="header">## [<span class="link-text">piglet</span>](<a href="https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwe7nxugks2w">https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwe7nxugks2w</a>)</span>
+![<span class="link-text"></span>](<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lwe7nxugks2w.jpg</a>)
+<span class="comment">&lt;!-- https://bsky.app/profile/yellowafterlife.bsky.social/post/3lwh6s7axvc2o --&gt;</span>
+![<span class="link-text"></span>](<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o.jpg</a>)
+![<span class="link-text"></span>](<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o=1.jpg</a>)
+</pre><p>
+		and that's pretty good for organizing related images.
+	</p></article></section></article></section><section><header id="md"><a href="#md" title="(permalink)">Markdown mode</a></header><article><a class="sticky-side" href="#md" title="Markdown mode"><span>Markdown mode</span></a><section><header id="--markdown---md"><a href="#--markdown---md" title="(permalink)">--markdown, --md</a></header><article><p>
+		Outputs markdown instead of plain text.
+	</p></article></section><section><header id="--thumb-width-x-height"><a href="#--thumb-width-x-height" title="(permalink)">--thumb &lt;width x height&gt;</a></header><article><p>
+		Generates thumbnails in specified dimensions (_at most_)
+		to use in markdown.
+		</p><p>
+		This is desirable if you have <i>a lot</i> of potentially large images in one document
+		and this is starting to take toll at document load speed.
+		</p><p>
+		That is, if you're doing <code>--thumb 320x240</code>
+		and an image is 2000x200, it'll be resized to 240x240.
+		</p><p>
+		Markdown output will change from
+		</p><pre class="md">
+![<span class="link-text"></span>](<a href="javascript:void(0)">cool.jpg</a>)
+</pre><p>
+		to
+		</p><pre class="md">
+[<span class="link-text">![<span class="link-text"></span>](<a href="javascript:void(0)">cool=th.jpg</a>)</span>](<a href="javascript:void(0)">cool.jpg</a>)
+</pre><p>
+		If you use this option without targeting Markdown,
+		this will generate thumbnail images but will not change the outputs;
+		</p><p>
+		Thumbnails are in JPEG format by default, or WEBP if you use <a href="#--webp">--webp</a>.
+	</p></article></section><section><header id="--md-img-links"><a href="#--md-img-links" title="(permalink)">--md-img-links</a></header><article><p>
+		Makes images link to original files even when not using the thumbnails, so instead of
+		</p><pre class="md">
+![<span class="link-text"></span>](<a href="javascript:void(0)">cool.jpg</a>)
+</pre><p>
+		you would have
+		</p><pre class="md">
+[<span class="link-text">![<span class="link-text"></span>](<a href="javascript:void(0)">cool.jpg</a>)</span>](<a href="javascript:void(0)">cool.jpg</a>)
+</pre></article></section></article></section><section><header id="image"><a href="#image" title="(permalink)">Image-specific</a></header><article><a class="sticky-side" href="#image" title="Image-specific"><span>Image-specific</span></a><section><header id="--max-dims-width-x-height"><a href="#--max-dims-width-x-height" title="(permalink)">--max-dims &lt;width x height&gt;</a></header><article><p>
+		Resizes images if they exceed this size.
+		</p><p>
+		For example, <code>--max-dims 2000x2000</code>.
+	</p></article></section><section><header id="--max-width-width---max-height-height"><a href="#--max-width-width---max-height-height" title="(permalink)">--max-width &lt;width&gt;, --max-height &lt;height&gt;</a></header><article><p>
+		Like above, but for one side.
+	</p></article></section><section><header id="--max-size-size"><a href="#--max-size-size" title="(permalink)">--max-size &lt;size&gt;</a></header><article><p>
+		Specifies maximum desired size per image.
+		</p><p>
+		For example, <code>--max-size 150KB</code> or <code>--max-size 1.5MB</code>.
+	</p></article></section><section><header id="--webp"><a href="#--webp" title="(permalink)">--webp</a></header><article><p>
+		Converts images to WEBP when opportunity arises and prefers downloading WEBPs from BlueSky.
+	</p></article></section><section><header id="--lossless---png"><a href="#--lossless---png" title="(permalink)">--lossless, --png</a></header><article><p>
+		Prefers downloading the (slightly lossy) PNGs from BlueSky.
+	</p></article></section><section><header id="--image-ext-ext"><a href="#--image-ext-ext" title="(permalink)">--image-ext &lt;ext&gt;</a></header><article><p>
+		Uses the specified file extension for images regardless of what the actual file format is.
+		For example, <code>--image-ext jpg</code>.
+		</p><p>
+		Note that file extensions may occasionally not match the contents even without this parameter
+		if OpenGraph says that the image is JPEG but the downloaded image is a WEBP, for example.
+	</p></article></section></article></section><section><header id="net"><a href="#net" title="(permalink)">Networking</a></header><article><a class="sticky-side" href="#net" title="Networking"><span>Networking</span></a><section><header id="user-agent"><a href="#user-agent" title="(permalink)">--user-agent &lt;snip&gt;</a></header><article><p>
+		Situationally useful if a website returns different OpenGraph fields depending on who's asking.
+	</p></article></section><section><header id="delay"><a href="#delay" title="(permalink)">--delay &lt;ms&gt;</a></header><article><p>
+		Waits this much between HTTP requests. Such as <code>--delay 250</code> to wait a quarter-second.
+		</p><p>
+		If you are downloading a lot of media files at once,
+		you might want to set this to some value so that you don't get rate-limited. 
+	</p></article></section></article></section><section><header id="debug"><a href="#debug" title="(permalink)">Debug/development</a></header><article><a class="sticky-side" href="#debug" title="Debug/development"><span>Debug/development</span></a><section><header id="--verbose"><a href="#--verbose" title="(permalink)">--verbose</a></header><article><p>
+		Shows detailed information about what's happening at each step of the way.
+	</p></article></section><section><header id="--run-tests"><a href="#--run-tests" title="(permalink)">--run-tests</a></header><article><p>
+		Makes sure that the application's basic features are all functional
+		by requesting a handful of my postings from different social networks.
+	</p></article></section><section><header id="--cache"><a href="#--cache" title="(permalink)">--cache</a></header><article><p>
+		Caches pages and resources in the <code>cache/</code> directory.
+		</p><p>
+		This is used when running tests so that resources aren't re-requested every time.
+	</p></article></section></article></section></p><!--doc>-->
+</section>
+</div>
+<!--<navmenu--><nav class="navmenu"><ul><li><a href="#inout">Input/output</a><ul><li><a href="#--dir-path">--dir &lt;path&gt;</a><ul></ul></li><li><a href="#--prefix-snip">--prefix &lt;snip&gt;</a><ul></ul></li><li><a href="#--out-path">--out &lt;path&gt;</a><ul></ul></li><li><a href="#--in-path">--in &lt;path&gt;</a><ul></ul></li></ul></li><li><a href="#md">Markdown mode</a><ul><li><a href="#--markdown---md">--markdown, --md</a><ul></ul></li><li><a href="#--thumb-width-x-height">--thumb &lt;width x height&gt;</a><ul></ul></li><li><a href="#--md-img-links">--md-img-links</a><ul></ul></li></ul></li><li><a href="#image">Image-specific</a><ul><li><a href="#--max-dims-width-x-height">--max-dims &lt;width x height&gt;</a><ul></ul></li><li><a href="#--max-width-width---max-height-height">--max-width &lt;width&gt;, --max-height &lt;height&gt;</a><ul></ul></li><li><a href="#--max-size-size">--max-size &lt;size&gt;</a><ul></ul></li><li><a href="#--webp">--webp</a><ul></ul></li><li><a href="#--lossless---png">--lossless, --png</a><ul></ul></li><li><a href="#--image-ext-ext">--image-ext &lt;ext&gt;</a><ul></ul></li></ul></li><li><a href="#net">Networking</a><ul><li><a href="#user-agent">--user-agent &lt;snip&gt;</a><ul></ul></li><li><a href="#delay">--delay &lt;ms&gt;</a><ul></ul></li></ul></li><li><a href="#debug">Debug/development</a><ul><li><a href="#--verbose">--verbose</a><ul></ul></li><li><a href="#--run-tests">--run-tests</a><ul></ul></li><li><a href="#--cache">--cache</a><ul></ul></li></ul></li></ul></nav><!--navmenu>-->
+</main></div>
+<script type="text/javascript">(function() {
+	var doc, headers;
+	//
+	var path = "<!--%[title]-->";
+	var state = null;
+	if (window.localStorage && JSON.parse) {
+		state = window.localStorage.getItem(path);
+		state = state ? JSON.parse(state) : { };
+		if (state == null) state = { };
+	}
+	var isLocal = (location.host.indexOf("localhost") == 0);
+	//
+	function h3bind(h3) {
+		var node = h3.parentNode;
+		var isLink = node.classList.contains("link");
+		var snip = node.children[1];
+		var id = h3.id || h3.textContent;
+		h3.snip = snip;
+		h3.doc_set = function(z) {
+			if (isLink) {} else if (z) node.classList.add("open"); else node.classList.remove("open");
+			if (state) {
+				state[id] = z;
+				window.localStorage.setItem(path, JSON.stringify(state));
+			}
+		}
+		h3.doc_hide = function() {
+			this.doc_set(false);
+		}
+		h3.doc_show = function() {
+			this.doc_set(true);
+		}
+		h3.onclick = function(_) {
+			var seen = !node.classList.contains("open");
+			h3.doc_set(seen);
+			return false;
+		};
+	}
+	function getHashFunc(id) {
+		var node = document.getElementById(id);
+		if (node == null) return null;
+		return function(e) {
+			while (node && node != doc) {
+				if (node.classList.contains("item")) {
+					node.classList.add("open");
+				}
+				node = node.parentElement;
+			}
+		};
+	}
+	// Display helpers:
+	window.opt_none = function() {
+		for (var li = 0; li < headers.length; li++) headers[li].doc_hide();
+	};
+	window.opt_list = function() {
+		for (var li = 0; li < headers.length; li++) {
+			var h3 = headers[li];
+			if (h3.parentNode.parentNode != doc) {
+				h3.doc_hide();
+			} else h3.doc_show();
+		}
+	};
+	window.opt_all = function() {
+		for (var li = 0; li < headers.length; li++) headers[li].doc_show();
+	};
+	window.live_post = function() {
+		doc = document.getElementById("doc");
+		headers = doc.getElementsByTagName("header");
+		//
+		for (var i = 0; i < headers.length; i++) h3bind(headers[i]);
+		// Clicks in document expand the related section:
+		var anchors = doc.getElementsByTagName("a");
+		for (var i = 0; i < anchors.length; i++) {
+			var anchor = anchors[i];
+			if (anchor.classList.contains("header")) continue;
+			var href = anchor.getAttribute("href");
+			if (href[0] == "#") {
+				var fn = getHashFunc(href.substr(1));
+				if (!fn) {
+					anchor.classList.add("broken");
+					anchor.title = "(section missing)";
+				} else anchor.addEventListener("click", fn);
+			}
+		}
+		//
+		for (var li = 0; li < headers.length; li++) {
+			var h3 = headers[li];
+			var val = state ? state[h3.id || h3.textContent] : null;
+			if (val == null) val = isLocal || h3.parentNode.parentNode == doc;
+			if (val) h3.doc_show(); else h3.doc_hide();
+		}
+	};
+	window.live_post();
+	//
+	(function() {
+		var hash = document.location.hash;
+		if (hash) {
+			var _hash = hash.substr(1);
+			getHashFunc(_hash)();
+			setTimeout(function() {
+				document.location.hash = hash + " ";
+				setTimeout(function() {
+					document.location.hash = hash;
+				}, 100);
+			}, 100);
+		}
+	})();
+	//
+	doc.setAttribute("ready", "");
+	})();</script>
+</body></html>

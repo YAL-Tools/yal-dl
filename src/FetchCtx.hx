@@ -17,6 +17,7 @@ class FetchCtx {
 	//
 	public var isPixels = false;
 	public var lines:Array<String> = [];
+	public var postText:String = null;
 	//
 	public var ready(get, never):Bool;
 	inline function get_ready() {
@@ -116,7 +117,12 @@ class FetchCtx {
 				File.copy(tempFull, imageFull);
 			}
 		} while (false);
-		var text = Config.markdown ? '[![$alt]($thumbRel)]($imageRel)' : imageRel;
+		var text;
+		if (Config.markdown) {
+			if (Config.mdLinkImages || Config.thumbSize != null) {
+				text = '[![$alt]($thumbRel)]($imageRel)';
+			} else text = '![$alt]($imageRel)';
+		} else text = imageRel;
 		lines.push(text);
 		imageLines.push(text);
 	}

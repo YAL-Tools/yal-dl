@@ -1,5 +1,6 @@
 import sys.FileSystem;
 import haxe.io.Path;
+using StringTools;
 
 class Config {
 	public static var verbose = false;
@@ -8,10 +9,12 @@ class Config {
 	public static var tempDir:String;
 	public static var outDir = ".";
 	public static var prefix = "";
-	public static var markdown = false;
-	public static var magick = false;
-	public static var lossless = false;
 	//
+	public static var markdown = false;
+	public static var mdLinkImages = false;
+	//
+	public static var imageExt:String = null;
+	public static var lossless = false;
 	public static var useWEBP = false;
 	public static var quality = 80;
 	//
@@ -33,5 +36,10 @@ class Config {
 		
 		cacheDir = Path.join([programDir, "cache"]);
 		if (cache && !FileSystem.exists(cacheDir)) FileSystem.createDirectory(cacheDir);
+		
+		if (prefix.endsWith("/") || prefix.endsWith("\\")) {
+			var prefixDir = outDir + "/" + prefix.substring(0, prefix.length - 1);
+			if (!FileSystem.exists(prefixDir)) FileSystem.createDirectory(prefixDir);
+		}
 	}
 }

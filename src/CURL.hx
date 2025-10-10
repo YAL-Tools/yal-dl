@@ -53,6 +53,8 @@ class CURL {
 	
 	public static function download(url:String, out:String) {
 		Console.verbose('Downloading "$url"');
+		Console.verbose('-> "$out"...');
+		
 		var cachePath = (Config.cache
 			? Path.join([Config.cacheDir, Tools.sanitizeName(url)])
 			: null
@@ -63,9 +65,7 @@ class CURL {
 				File.copy(cachePath, out);
 				return true;
 			}
-		}
-		
-		Console.verbose('-> "$out"... ');
+		};
 		var curl = spawnCURL([
 			"--location", url,
 			"--output", out,

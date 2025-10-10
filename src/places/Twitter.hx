@@ -22,6 +22,8 @@ class Twitter {
 			return;
 		}
 		
+		ctx.postText = tweet.text;
+		
 		var name = ["twitter", tweet.user_screen_name, tweet.tweetID].join(Config.sep);
 		
 		// support "/photo/#" since you can copy a link to n-th attachment
@@ -41,16 +43,16 @@ class Twitter {
 			var qAt = url.indexOf("?");
 			if (qAt >= 0) url = url.substring(0, qAt);
 			
-			var itemExt = Path.extension(url).toLowerCase();
-			if (itemExt == "") {
-				itemExt = switch (item.type) {
-					case GIF, Video: "mp4";
-					default: "jpg";
-				}
+			var itemExt:String;
+			switch (item.type) {
+				case GIF, Video:
+					itemExt = url.urlExtension() ?? "mp4";
+				default:
+					itemExt = Config.imageExt ?? url.urlExtension() ?? "jpg";
 			}
 			
 			var itemName = name.appendIndex(itemInd);
-			var itemRel = Config.prefix + itemName + '.$itemExt';
+			var itemRel = Config.prefix + itemName.appendExtension(itemExt);
 			var itemFull = Config.outDir + "/" + itemRel;
 			
 			//

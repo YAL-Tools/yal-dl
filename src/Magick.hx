@@ -17,15 +17,15 @@ class Magick {
 		if (thumbSize == null) return null;
 		Console.verbose('Generating a thumbnail for "$imageRel"');
 		
-		var ext = Config.useWEBP ? "webp" : "jpg";
-		var suffix = sep + 'th.$ext';
+		var thumbExt = Config.imageExt ?? (Config.useWEBP ? "webp" : "jpg");
+		var suffix = sep + "th".appendExtension(thumbExt);
 		var thumbFull = Path.withoutExtension(imageFull) + suffix;
 		var thumbRel = Path.withoutExtension(imageRel) + suffix;
 		var proc = run([
 			imageFull,
 			"-resize", thumbSize + ">",
 			"-quality", Std.string(Config.quality),
-			thumbFull
+			(Config.useWEBP ? "WEBP:" : "JPG:") + thumbFull
 		]);
 		if (proc.error != null) return null;
 		return thumbRel;
