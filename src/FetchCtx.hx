@@ -1,3 +1,4 @@
+import FileTools.PathPair;
 import Magick;
 import haxe.io.Path;
 import sys.FileSystem;
@@ -8,6 +9,7 @@ import js.node.ChildProcess;
 #else
 import sys.io.Process;
 #end
+using StringTools;
 
 class FetchCtx {
 	//
@@ -41,7 +43,7 @@ class FetchCtx {
 	}
 	//
 	public var imageLines:Array<String> = [];
-	public function addImage(imageRel:String, imageFull:String, thumbRel:String, alt:String) {
+	public function addImage(imageRel:String, imageFull:String, thumbPair:PathPair, alt:String) {
 		var maxSize = Config.maxSize;
 		var maxWidth = Config.maxWidth, maxHeight = Config.maxHeight;
 		if (maxSize > 0 || maxWidth > 0 || maxHeight > 0) do {
@@ -117,12 +119,40 @@ class FetchCtx {
 				File.copy(tempFull, imageFull);
 			}
 		} while (false);
-		var text;
-		if (Config.markdown) {
-			if (Config.mdLinkImages || Config.thumbSize != null) {
-				text = '[![$alt]($thumbRel)]($imageRel)';
-			} else text = '![$alt]($imageRel)';
-		} else text = imageRel;
+		
+		var showRel = thumbPair?.rel ?? imageRel;
+		var showFull = thumbPair?.full ?? imageFull;
+		
+		var md = Config.markdown;
+		var dims = md && Config.mdImageDims ? Magick.getDims(showFull) : null;
+		var hasLink = md && (thumbPair != null || Config.mdImageLinks);
+		
+		var text:String;
+		if (dims != null) {
+			text = "";
+			if (hasLink) {
+				text = ('<a'
+					+ ' href="${imageRel.htmlEscape(true)}"'
+				+ '>');
+			}
+			
+			text += ('<img'
+				+ ' src="${showRel.htmlEscape(true)}"'
+				+ ' width="${dims.width}"'
+				+ ' height="${dims.height}"'
+				+ (alt != null && alt != "" ? ' alt="${alt.htmlEscape(true)}"' : '')
+			+ '/>');
+			
+			if (hasLink) text += "</a>";
+		} else if (Config.markdown) {
+			text = '![$alt]($showRel)';
+			if (hasLink) {
+				text = '[$text]($imageRel)';
+			}
+		} else {
+			text = imageRel;
+		}
+		
 		lines.push(text);
 		imageLines.push(text);
 	}

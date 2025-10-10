@@ -11,7 +11,8 @@ class Config {
 	public static var prefix = "";
 	//
 	public static var markdown = false;
-	public static var mdLinkImages = false;
+	public static var mdImageLinks = false;
+	public static var mdImageDims = false;
 	//
 	public static var imageExt:String = null;
 	public static var lossless = false;

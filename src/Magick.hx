@@ -12,7 +12,7 @@ class Magick {
 		}
 		return proc;
 	}
-	public static function createThumb(imageRel:String, imageFull:String) {
+	public static function createThumb(imageRel:String, imageFull:String):PathPair {
 		var thumbSize = Config.thumbSize;
 		if (thumbSize == null) return null;
 		Console.verbose('Generating a thumbnail for "$imageRel"');
@@ -28,7 +28,7 @@ class Magick {
 			(Config.useWEBP ? "WEBP:" : "JPG:") + thumbFull
 		]);
 		if (proc.error != null) return null;
-		return thumbRel;
+		return { rel: thumbRel, full: thumbFull };
 	}
 	public static function getDims(imageFull:String):MagickDims {
 		var proc = run([

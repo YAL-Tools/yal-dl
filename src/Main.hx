@@ -55,6 +55,7 @@ class Main {
 			}
 			var argName = args[argi];
 			var del = switch (argName) {
+				// input/output
 				case "--in": {
 					inPath = str();
 					2;
@@ -66,21 +67,34 @@ class Main {
 				}
 				case "--prefix": Config.prefix = str(); 2;
 				case "--dir": Config.outDir = str(); 2;
-				//
+				// markdown
 				case "--md", "--markdown": Config.markdown = true; 1;
 				case "--plain": Config.markdown = false; 1;
-				//
-				case "--md-img-links": Config.mdLinkImages = true; 1;
-				//
-				case "--cache": Config.cache = true; 1;
-				case "--png", "--lossless": Config.lossless = true; 1;
-				case "--webp": Config.useWEBP = true; 1;
-				case "--verbose": Config.verbose = true; 1;
+				case "--md-img-links", "--md-image-links": {
+					Config.mdImageLinks = true; 1;
+				}
+				case "--md-img-dims", "--md-img-dimensions",
+					"--md-image-dims", "--md-image-dimensions": {
+					Config.mdImageDims = true; 1;
+				}
 				case "--thumb": Config.thumbSize = str(); 2;
-				//
+				// network
 				case "--user-agent": Config.userAgent = str(); 2;
 				case "--delay": Config.delay = int(0); 2;
-				//
+				// image 
+				case "--webp": Config.useWEBP = true; 1;
+				case "--png", "--lossless": Config.lossless = true; 1;
+				case "--quality": {
+					var qs = str();
+					if (qs.endsWith("%")) qs = qs.substr(0, qs.length - 1);
+					var q = Std.parseInt(qs);
+					if (q != null) {
+						Config.quality = q;
+					} else {
+						Sys.println('"${str()}" is not a valid quality');
+					}
+					2;
+				};
 				case "--max-size": {
 					var snip = str().toLowerCase();
 					static var rxSize = ~/^([\d,.]+)\s*([km]?b?)?$/;
@@ -117,6 +131,10 @@ class Main {
 					if (Config.imageExt == ".") Config.imageExt = "";
 					2;
 				};
+				// debug
+				case "--cache": Config.cache = true; 1;
+				case "--verbose": Config.verbose = true; 1;
+				//
 				default: {
 					if (argName.startsWith("--")) {
 						Sys.println('$argName is not a known argument.');

@@ -1,3 +1,4 @@
+```set title yal-dl documentation```
 ```set template default.html```
 ```set navmenu 1```
 ```set inc_dmd ./inc.dmd```
@@ -76,10 +77,12 @@ This is documentation for [YAL's social media downloader](https://github.com/YAL
 	}
 }
 #[Markdown mode](md) {
-	#[--markdown, --md]() {
+	#[--markdown]() {
+		_Or_ `--md`
+		
 		Outputs markdown instead of plain text.
 	}
-	#[--thumb <width x height>]() {
+	#[--thumb <width x height>](--thumb) {
 		Generates thumbnails in specified dimensions (_at most_)
 		to use in markdown.
 		
@@ -104,6 +107,8 @@ This is documentation for [YAL's social media downloader](https://github.com/YAL
 		Thumbnails are in JPEG format by default, or WEBP if you use [--webp].
 	}
 	#[--md-img-links]() {
+		_Or_ `--md-image-links`
+		
 		Makes images link to original files even when not using the thumbnails, so instead of
 		```md
 		![](cool.jpg)
@@ -113,28 +118,58 @@ This is documentation for [YAL's social media downloader](https://github.com/YAL
 		[![](cool.jpg)](cool.jpg)
 		```
 	}
+	#[--md-img-dims]() {
+		_Or_ `--md-image-dimensions`
+		
+		Uses `<img/>` elements instead of `![]()` and specifies width/height.
+		
+		Thus instead of
+		```md
+		![](cool.jpg)
+		```
+		you would have
+		```text
+		<img src="cool.jpg" width="640" height="360"/>
+		```
+	}
 }
 #[Image-specific](image) {
-	#[--max-dims <width x height>]() {
+	#[--max-dims <width x height>](--max-dims) {
+		_Or_ `--max-dimensions`
+		
 		Resizes images if they exceed this size.
 		
 		For example, `--max-dims 2000x2000`.
 	}
-	#[--max-width <width>, --max-height <height>]() {
+	#[--max-width <width>, --max-height <height>](--max-width) {
 		Like above, but for one side.
 	}
-	#[--max-size <size>]() {
+	#[--max-size <size>](--max-size) {
 		Specifies maximum desired size per image.
 		
 		For example, `--max-size 150KB` or `--max-size 1.5MB`.
+		
+		Figuring out how to fit an image under the given file size is kind of complicated
+		so the tool will try re-encoding it to a lossy format in 75% size,
+		or 56.25% (75%²) if that doesn't work out, and so on (up to 7 attempts total).
+	}
+	#[--quality <number>](--quality) {
+		Specifies quality for JPEG/WEBP when re-encoding images for above or [--thumb].
+		
+		Default is `--quality 80`.
 	}
 	#[--webp]() {
-		Converts images to WEBP when opportunity arises and prefers downloading WEBPs from BlueSky.
+		Converts images to WEBP when the need arises and prefers downloading WEBPs from BlueSky.
 	}
-	#[--lossless, --png]() {
-		Prefers downloading the (slightly lossy) PNGs from BlueSky.
+	#[--lossless]() {
+		_Or_ `--png`.
+		
+		Prefers downloading the (mysteriously, slightly lossy) PNGs from BlueSky.
+		
+		Not used for anything else at the moment because _surely_ you wouldn't want
+		your thumbnails to be PNGs?
 	}
-	#[--image-ext <ext>]() {
+	#[--image-ext <ext>](--image-ext) {
 		Uses the specified file extension for images regardless of what the actual file format is.
 		For example, `--image-ext jpg`.
 		
@@ -143,10 +178,10 @@ This is documentation for [YAL's social media downloader](https://github.com/YAL
 	}
 }
 #[Networking](net) {
-	#[--user-agent <snip>](user-agent) {
+	#[--user-agent <snip>](--user-agent) {
 		Situationally useful if a website returns different OpenGraph fields depending on who's asking.
 	}
-	#[--delay <ms>](delay) {
+	#[--delay <ms>](--delay) {
 		Waits this much between HTTP requests. Such as `--delay 250` to wait a quarter-second.
 		
 		If you are downloading a lot of media files at once,

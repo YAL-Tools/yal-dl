@@ -1,13 +1,13 @@
 <!DOCTYPE HTML><html lang="en"><head>
 <meta charset="UTF-8">
-<title>untitled</title>
+<title>yal-dl documentation</title>
 <meta name="viewport" content="width=device-width" />
 <meta name="livenode" content="#doc" />
 <meta property="theme-color" content="#FFF037" />
 <meta property="og:type" content="article" />
 <meta property="og:locale" content="en_us" />
 <meta property="og:site_name" content="YellowAfterlife" />
-<meta property="og:title" content="untitled" />
+<meta property="og:title" content="yal-dl documentation" />
 <script type="text/javascript">
 if (document.location.host == "yal.cc" && location.protocol == "http:") {
 	document.location.protocol = "https:";
@@ -420,6 +420,7 @@ Click on sections to expand/collapse them.<br>Quick display controls:
 
 
 
+
 <style>
 #doc {
 	pre {
@@ -513,9 +514,11 @@ piglet
 ![<span class="link-text"></span>](<a href="javascript:void(0)">bsky=yellowafterlife.bsky.social=3lwh6s7axvc2o=1.jpg</a>)
 </pre><p>
 		and that's pretty good for organizing related images.
-	</p></article></section></article></section><section><header id="md"><a href="#md" title="(permalink)">Markdown mode</a></header><article><a class="sticky-side" href="#md" title="Markdown mode"><span>Markdown mode</span></a><section><header id="--markdown---md"><a href="#--markdown---md" title="(permalink)">--markdown, --md</a></header><article><p>
+	</p></article></section></article></section><section><header id="md"><a href="#md" title="(permalink)">Markdown mode</a></header><article><a class="sticky-side" href="#md" title="Markdown mode"><span>Markdown mode</span></a><section><header id="--markdown"><a href="#--markdown" title="(permalink)">--markdown</a></header><article><p>
+		<i>Or</i> <code>--md</code>
+		</p><p>
 		Outputs markdown instead of plain text.
-	</p></article></section><section><header id="--thumb-width-x-height"><a href="#--thumb-width-x-height" title="(permalink)">--thumb &lt;width x height&gt;</a></header><article><p>
+	</p></article></section><section><header id="--thumb"><a href="#--thumb" title="(permalink)">--thumb &lt;width x height&gt;</a></header><article><p>
 		Generates thumbnails in specified dimensions (_at most_)
 		to use in markdown.
 		</p><p>
@@ -538,6 +541,8 @@ piglet
 		</p><p>
 		Thumbnails are in JPEG format by default, or WEBP if you use <a href="#--webp">--webp</a>.
 	</p></article></section><section><header id="--md-img-links"><a href="#--md-img-links" title="(permalink)">--md-img-links</a></header><article><p>
+		<i>Or</i> <code>--md-image-links</code>
+		</p><p>
 		Makes images link to original files even when not using the thumbnails, so instead of
 		</p><pre class="md">
 ![<span class="link-text"></span>](<a href="javascript:void(0)">cool.jpg</a>)
@@ -545,29 +550,56 @@ piglet
 		you would have
 		</p><pre class="md">
 [<span class="link-text">![<span class="link-text"></span>](<a href="javascript:void(0)">cool.jpg</a>)</span>](<a href="javascript:void(0)">cool.jpg</a>)
-</pre></article></section></article></section><section><header id="image"><a href="#image" title="(permalink)">Image-specific</a></header><article><a class="sticky-side" href="#image" title="Image-specific"><span>Image-specific</span></a><section><header id="--max-dims-width-x-height"><a href="#--max-dims-width-x-height" title="(permalink)">--max-dims &lt;width x height&gt;</a></header><article><p>
+</pre></article></section><section><header id="--md-img-dims"><a href="#--md-img-dims" title="(permalink)">--md-img-dims</a></header><article><p>
+		<i>Or</i> <code>--md-image-dimensions</code>
+		</p><p>
+		Uses <code>&lt;img/&gt;</code> elements instead of <code>![]()</code> and specifies width/height.
+		</p><p>
+		Thus instead of
+		</p><pre class="md">
+![<span class="link-text"></span>](<a href="javascript:void(0)">cool.jpg</a>)
+</pre><p>
+		you would have
+		</p><pre>
+&lt;img src="cool.jpg" width="640" height="360"/&gt;
+</pre></article></section></article></section><section><header id="image"><a href="#image" title="(permalink)">Image-specific</a></header><article><a class="sticky-side" href="#image" title="Image-specific"><span>Image-specific</span></a><section><header id="--max-dims"><a href="#--max-dims" title="(permalink)">--max-dims &lt;width x height&gt;</a></header><article><p>
+		<i>Or</i> <code>--max-dimensions</code>
+		</p><p>
 		Resizes images if they exceed this size.
 		</p><p>
 		For example, <code>--max-dims 2000x2000</code>.
-	</p></article></section><section><header id="--max-width-width---max-height-height"><a href="#--max-width-width---max-height-height" title="(permalink)">--max-width &lt;width&gt;, --max-height &lt;height&gt;</a></header><article><p>
+	</p></article></section><section><header id="--max-width"><a href="#--max-width" title="(permalink)">--max-width &lt;width&gt;, --max-height &lt;height&gt;</a></header><article><p>
 		Like above, but for one side.
-	</p></article></section><section><header id="--max-size-size"><a href="#--max-size-size" title="(permalink)">--max-size &lt;size&gt;</a></header><article><p>
+	</p></article></section><section><header id="--max-size"><a href="#--max-size" title="(permalink)">--max-size &lt;size&gt;</a></header><article><p>
 		Specifies maximum desired size per image.
 		</p><p>
 		For example, <code>--max-size 150KB</code> or <code>--max-size 1.5MB</code>.
+		</p><p>
+		Figuring out how to fit an image under the given file size is kind of complicated
+		so the tool will try re-encoding it to a lossy format in 75% size,
+		or 56.25% (75%²) if that doesn't work out, and so on (up to 7 attempts total).
+	</p></article></section><section><header id="--quality"><a href="#--quality" title="(permalink)">--quality &lt;number&gt;</a></header><article><p>
+		Specifies quality for JPEG/WEBP when re-encoding images for above or <a href="#--thumb">--thumb</a>.
+		</p><p>
+		Default is <code>--quality 80</code>.
 	</p></article></section><section><header id="--webp"><a href="#--webp" title="(permalink)">--webp</a></header><article><p>
-		Converts images to WEBP when opportunity arises and prefers downloading WEBPs from BlueSky.
-	</p></article></section><section><header id="--lossless---png"><a href="#--lossless---png" title="(permalink)">--lossless, --png</a></header><article><p>
-		Prefers downloading the (slightly lossy) PNGs from BlueSky.
-	</p></article></section><section><header id="--image-ext-ext"><a href="#--image-ext-ext" title="(permalink)">--image-ext &lt;ext&gt;</a></header><article><p>
+		Converts images to WEBP when the need arises and prefers downloading WEBPs from BlueSky.
+	</p></article></section><section><header id="--lossless"><a href="#--lossless" title="(permalink)">--lossless</a></header><article><p>
+		<i>Or</i> <code>--png</code>.
+		</p><p>
+		Prefers downloading the (mysteriously, slightly lossy) PNGs from BlueSky.
+		</p><p>
+		Not used for anything else at the moment because <i>surely</i> you wouldn't want
+		your thumbnails to be PNGs?
+	</p></article></section><section><header id="--image-ext"><a href="#--image-ext" title="(permalink)">--image-ext &lt;ext&gt;</a></header><article><p>
 		Uses the specified file extension for images regardless of what the actual file format is.
 		For example, <code>--image-ext jpg</code>.
 		</p><p>
 		Note that file extensions may occasionally not match the contents even without this parameter
 		if OpenGraph says that the image is JPEG but the downloaded image is a WEBP, for example.
-	</p></article></section></article></section><section><header id="net"><a href="#net" title="(permalink)">Networking</a></header><article><a class="sticky-side" href="#net" title="Networking"><span>Networking</span></a><section><header id="user-agent"><a href="#user-agent" title="(permalink)">--user-agent &lt;snip&gt;</a></header><article><p>
+	</p></article></section></article></section><section><header id="net"><a href="#net" title="(permalink)">Networking</a></header><article><a class="sticky-side" href="#net" title="Networking"><span>Networking</span></a><section><header id="--user-agent"><a href="#--user-agent" title="(permalink)">--user-agent &lt;snip&gt;</a></header><article><p>
 		Situationally useful if a website returns different OpenGraph fields depending on who's asking.
-	</p></article></section><section><header id="delay"><a href="#delay" title="(permalink)">--delay &lt;ms&gt;</a></header><article><p>
+	</p></article></section><section><header id="--delay"><a href="#--delay" title="(permalink)">--delay &lt;ms&gt;</a></header><article><p>
 		Waits this much between HTTP requests. Such as <code>--delay 250</code> to wait a quarter-second.
 		</p><p>
 		If you are downloading a lot of media files at once,
@@ -584,12 +616,12 @@ piglet
 	</p></article></section></article></section></p><!--doc>-->
 </section>
 </div>
-<!--<navmenu--><nav class="navmenu"><ul><li><a href="#inout">Input/output</a><ul><li><a href="#--dir-path">--dir &lt;path&gt;</a><ul></ul></li><li><a href="#--prefix-snip">--prefix &lt;snip&gt;</a><ul></ul></li><li><a href="#--out-path">--out &lt;path&gt;</a><ul></ul></li><li><a href="#--in-path">--in &lt;path&gt;</a><ul></ul></li></ul></li><li><a href="#md">Markdown mode</a><ul><li><a href="#--markdown---md">--markdown, --md</a><ul></ul></li><li><a href="#--thumb-width-x-height">--thumb &lt;width x height&gt;</a><ul></ul></li><li><a href="#--md-img-links">--md-img-links</a><ul></ul></li></ul></li><li><a href="#image">Image-specific</a><ul><li><a href="#--max-dims-width-x-height">--max-dims &lt;width x height&gt;</a><ul></ul></li><li><a href="#--max-width-width---max-height-height">--max-width &lt;width&gt;, --max-height &lt;height&gt;</a><ul></ul></li><li><a href="#--max-size-size">--max-size &lt;size&gt;</a><ul></ul></li><li><a href="#--webp">--webp</a><ul></ul></li><li><a href="#--lossless---png">--lossless, --png</a><ul></ul></li><li><a href="#--image-ext-ext">--image-ext &lt;ext&gt;</a><ul></ul></li></ul></li><li><a href="#net">Networking</a><ul><li><a href="#user-agent">--user-agent &lt;snip&gt;</a><ul></ul></li><li><a href="#delay">--delay &lt;ms&gt;</a><ul></ul></li></ul></li><li><a href="#debug">Debug/development</a><ul><li><a href="#--verbose">--verbose</a><ul></ul></li><li><a href="#--run-tests">--run-tests</a><ul></ul></li><li><a href="#--cache">--cache</a><ul></ul></li></ul></li></ul></nav><!--navmenu>-->
+<!--<navmenu--><nav class="navmenu"><ul><li><a href="#inout">Input/output</a><ul><li><a href="#--dir-path">--dir &lt;path&gt;</a><ul></ul></li><li><a href="#--prefix-snip">--prefix &lt;snip&gt;</a><ul></ul></li><li><a href="#--out-path">--out &lt;path&gt;</a><ul></ul></li><li><a href="#--in-path">--in &lt;path&gt;</a><ul></ul></li></ul></li><li><a href="#md">Markdown mode</a><ul><li><a href="#--markdown">--markdown</a><ul></ul></li><li><a href="#--thumb">--thumb &lt;width x height&gt;</a><ul></ul></li><li><a href="#--md-img-links">--md-img-links</a><ul></ul></li><li><a href="#--md-img-dims">--md-img-dims</a><ul></ul></li></ul></li><li><a href="#image">Image-specific</a><ul><li><a href="#--max-dims">--max-dims &lt;width x height&gt;</a><ul></ul></li><li><a href="#--max-width">--max-width &lt;width&gt;, --max-height &lt;height&gt;</a><ul></ul></li><li><a href="#--max-size">--max-size &lt;size&gt;</a><ul></ul></li><li><a href="#--quality">--quality &lt;number&gt;</a><ul></ul></li><li><a href="#--webp">--webp</a><ul></ul></li><li><a href="#--lossless">--lossless</a><ul></ul></li><li><a href="#--image-ext">--image-ext &lt;ext&gt;</a><ul></ul></li></ul></li><li><a href="#net">Networking</a><ul><li><a href="#--user-agent">--user-agent &lt;snip&gt;</a><ul></ul></li><li><a href="#--delay">--delay &lt;ms&gt;</a><ul></ul></li></ul></li><li><a href="#debug">Debug/development</a><ul><li><a href="#--verbose">--verbose</a><ul></ul></li><li><a href="#--run-tests">--run-tests</a><ul></ul></li><li><a href="#--cache">--cache</a><ul></ul></li></ul></li></ul></nav><!--navmenu>-->
 </main></div>
 <script type="text/javascript">(function() {
 	var doc, headers;
 	//
-	var path = "<!--%[title]-->";
+	var path = "yal-dl documentation";
 	var state = null;
 	if (window.localStorage && JSON.parse) {
 		state = window.localStorage.getItem(path);

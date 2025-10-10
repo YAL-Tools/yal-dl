@@ -32,8 +32,9 @@ class FileTools {
 			return -1;
 		}
 	}
-	
-	@:noUsing public static function getAltPath(path:String) {
-		
-	}
 }
+
+typedef PathPair = {
+	var rel:String;
+	var full:String;
+};

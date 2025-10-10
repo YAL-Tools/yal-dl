@@ -196,7 +196,7 @@ FetchCtx.prototype = {
 			return "Failed to find media in \"" + this.url + "\".";
 		}
 	}
-	,addImage: function(imageRel,imageFull,thumbRel,alt) {
+	,addImage: function(imageRel,imageFull,thumbPair,alt) {
 		var maxSize = Config.maxSize;
 		var maxWidth = Config.maxWidth;
 		var maxHeight = Config.maxHeight;
@@ -205,7 +205,7 @@ FetchCtx.prototype = {
 				var wantResize = false;
 				if(Config.maxSize > 0) {
 					var size = FileTools.getSize(imageFull);
-					haxe_Log.trace(imageFull,{ fileName : "src/FetchCtx.hx", lineNumber : 52, className : "FetchCtx", methodName : "addImage", customParams : [size / 1024,maxSize / 1024]});
+					haxe_Log.trace(imageFull,{ fileName : "src/FetchCtx.hx", lineNumber : 54, className : "FetchCtx", methodName : "addImage", customParams : [size / 1024,maxSize / 1024]});
 					wantResize = size > maxSize;
 				}
 				if(!wantResize && (Config.maxWidth > 0 || Config.maxHeight > 0)) {
@@ -272,12 +272,27 @@ FetchCtx.prototype = {
 				}
 			} while(false);
 		}
+		var tmp = thumbPair != null ? thumbPair.rel : null;
+		var showRel = tmp != null ? tmp : imageRel;
+		var tmp = thumbPair != null ? thumbPair.full : null;
+		var showFull = tmp != null ? tmp : imageFull;
+		var md = Config.markdown;
+		var dims = md && Config.mdImageDims ? Magick.getDims(showFull) : null;
+		var hasLink = md && (thumbPair != null || Config.mdImageLinks);
 		var text;
-		if(Config.markdown) {
-			if(Config.mdLinkImages || Config.thumbSize != null) {
-				text = "[![" + alt + "](" + thumbRel + ")](" + imageRel + ")";
-			} else {
-				text = "![" + alt + "](" + imageRel + ")";
+		if(dims != null) {
+			text = "";
+			if(hasLink) {
+				text = "<a" + (" href=\"" + StringTools.htmlEscape(imageRel,true) + "\"") + ">";
+			}
+			text += "<img" + (" src=\"" + StringTools.htmlEscape(showRel,true) + "\"") + (" width=\"" + dims.width + "\"") + (" height=\"" + dims.height + "\"") + (alt != null && alt != "" ? " alt=\"" + StringTools.htmlEscape(alt,true) + "\"" : "") + "/>";
+			if(hasLink) {
+				text += "</a>";
+			}
+		} else if(Config.markdown) {
+			text = "![" + alt + "](" + showRel + ")";
+			if(hasLink) {
+				text = "[" + text + "](" + imageRel + ")";
 			}
 		} else {
 			text = imageRel;
@@ -334,8 +349,6 @@ FileTools.getSize = function(path) {
 		}
 		return -1;
 	}
-};
-FileTools.getAltPath = function(path) {
 };
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
@@ -397,7 +410,7 @@ Magick.createThumb = function(imageRel,imageFull) {
 	if(proc.error != null) {
 		return null;
 	}
-	return thumbRel;
+	return { rel : thumbRel, full : thumbFull};
 };
 Magick.getDims = function(imageFull) {
 	var proc = Magick.run([imageFull,"-format","dims:%w:%h","info:"]);
@@ -540,8 +553,12 @@ Main.main = function() {
 			Config.maxWidth = tmp4 != null ? tmp4 : 0;
 			del = 2;
 			break;
-		case "--md-img-links":
-			Config.mdLinkImages = true;
+		case "--md-image-dimensions":case "--md-image-dims":case "--md-img-dimensions":case "--md-img-dims":
+			Config.mdImageDims = true;
+			del = 1;
+			break;
+		case "--md-image-links":case "--md-img-links":
+			Config.mdImageLinks = true;
 			del = 1;
 			break;
 		case "--out":
@@ -557,6 +574,20 @@ Main.main = function() {
 			break;
 		case "--prefix":
 			Config.prefix = args[argi + 1];
+			del = 2;
+			break;
+		case "--quality":
+			var qs = args[argi + 1];
+			if(StringTools.endsWith(qs,"%")) {
+				qs = HxOverrides.substr(qs,0,qs.length - 1);
+			}
+			var q = Std.parseInt(qs);
+			if(q != null) {
+				Config.quality = q;
+			} else {
+				process.stdout.write(Std.string("\"" + args[argi + 1] + "\" is not a valid quality"));
+				process.stdout.write("\n");
+			}
 			del = 2;
 			break;
 		case "--thumb":
@@ -696,6 +727,52 @@ Std.parseInt = function(x) {
 };
 var StringTools = function() { };
 StringTools.__name__ = true;
+StringTools.htmlEscape = function(s,quotes) {
+	var buf_b = "";
+	var _g_offset = 0;
+	var _g_s = s;
+	while(_g_offset < _g_s.length) {
+		var s = _g_s;
+		var index = _g_offset++;
+		var c = s.charCodeAt(index);
+		if(c >= 55296 && c <= 56319) {
+			c = c - 55232 << 10 | s.charCodeAt(index + 1) & 1023;
+		}
+		var c1 = c;
+		if(c1 >= 65536) {
+			++_g_offset;
+		}
+		var code = c1;
+		switch(code) {
+		case 34:
+			if(quotes) {
+				buf_b += "&quot;";
+			} else {
+				buf_b += String.fromCodePoint(code);
+			}
+			break;
+		case 38:
+			buf_b += "&amp;";
+			break;
+		case 39:
+			if(quotes) {
+				buf_b += "&#039;";
+			} else {
+				buf_b += String.fromCodePoint(code);
+			}
+			break;
+		case 60:
+			buf_b += "&lt;";
+			break;
+		case 62:
+			buf_b += "&gt;";
+			break;
+		default:
+			buf_b += String.fromCodePoint(code);
+		}
+	}
+	return buf_b;
+};
 StringTools.htmlUnescape = function(s) {
 	return s.split("&gt;").join(">").split("&lt;").join("<").split("&quot;").join("\"").split("&#039;").join("'").split("&amp;").join("&");
 };
@@ -1813,7 +1890,8 @@ Config.cache = false;
 Config.outDir = ".";
 Config.prefix = "";
 Config.markdown = false;
-Config.mdLinkImages = false;
+Config.mdImageLinks = false;
+Config.mdImageDims = false;
 Config.lossless = false;
 Config.useWEBP = false;
 Config.quality = 80;
