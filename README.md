@@ -46,6 +46,56 @@ bsky=yellowafterlife.bsky.social=3lwk6evrnec2o.jpg
 The tool is single-file so you can copy `yal-dl.js` wherever you need it,
 or even make it globally accessible.
 
+Check out the [docs](https://yal-tools.github.io/yal-dl/) for more parameters -
+you can have the tool take input from files, or output to a file,
+or even generate Markdown for a little gallery like this!
+
+<img src="./gallery.webp" width="820" height="480" alt="Downloaded images (in this case, mostly photos and paintings of architecture) showing in a columnar/masonry layout inside VS Code">
+
+<details><summary>Gallery breakdown</summary><blockquote>
+
+`links.txt`:
+```
+Staircase & greenery
+https://x.com/jhsuart/status/1428439445246672898
+
+Lighthouse
+https://x.com/LukeTscharke/status/1456391300907896832
+
+Water ceiling
+https://x.com/pasta_loving/status/1923581169339335071
+
+...
+```
+Command:
+```
+node yal-dl.js --prefix img/ --in links.txt --out out.md --thumb 240x400
+```
+Markdown structure:
+```md
+<style>
+.columns {
+	column-count: auto;
+	column-width: 160px;
+}
+.columns > *:not(h2) {
+	break-before: avoid;
+	break-inside: avoid;
+}
+
+</style>
+<div class="columns">
+
+## [Staircase & greenery](https://x.com/jhsuart/status/1428439445246672898)
+[![](img/twitter=jhsuart=1428439445246672898=th.jpg)](img/twitter=jhsuart=1428439445246672898.jpg)
+
+...
+
+</div>
+```
+
+</blockquote></details>
+
 ## Support
 
 | Website | S.? | Notes |

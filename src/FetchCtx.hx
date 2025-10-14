@@ -51,7 +51,6 @@ class FetchCtx {
 			var wantResize = false;
 			if (Config.maxSize > 0) {
 				var size = FileTools.getSize(imageFull);
-				trace(imageFull, size/1024, maxSize/1024);
 				wantResize = size > maxSize;
 			}
 			// dimensions too big?
