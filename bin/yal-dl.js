@@ -205,7 +205,6 @@ FetchCtx.prototype = {
 				var wantResize = false;
 				if(Config.maxSize > 0) {
 					var size = FileTools.getSize(imageFull);
-					haxe_Log.trace(imageFull,{ fileName : "src/FetchCtx.hx", lineNumber : 54, className : "FetchCtx", methodName : "addImage", customParams : [size / 1024,maxSize / 1024]});
 					wantResize = size > maxSize;
 				}
 				if(!wantResize && (Config.maxWidth > 0 || Config.maxHeight > 0)) {
@@ -594,6 +593,20 @@ Main.main = function() {
 			Config.thumbSize = args[argi + 1];
 			del = 2;
 			break;
+		case "--title-omit":
+			Config.titleOmit.push(new EReg(args[argi + 1],""));
+			del = 2;
+			break;
+		case "--title-replace":
+			var del1 = Config.titleReplace;
+			var del2 = new EReg(args[argi + 1],"");
+			var ofs = 1;
+			if(ofs == null) {
+				ofs = 0;
+			}
+			del1.push({ what : del2, 'with' : args[argi + (1 + ofs)]});
+			del = 3;
+			break;
 		case "--user-agent":
 			Config.userAgent = args[argi + 1];
 			del = 2;
@@ -623,6 +636,7 @@ Main.main = function() {
 	var markdown = Config.markdown;
 	var outLines = [];
 	if(inPath != null) {
+		var show = true;
 		var text = js_node_Fs.readFileSync(inPath,{ encoding : "utf8"});
 		text = StringTools.replace(text,"\r","");
 		var lines = text.split("\n");
@@ -635,39 +649,63 @@ Main.main = function() {
 			if(Main.rxURL.match(line)) {
 				var url = line;
 				if(header != null && header != "") {
-					if(markdown) {
-						outLines.push("## [" + header + "](" + url + ")");
-					} else {
-						outLines.push(header);
+					show = true;
+					var _g1 = 0;
+					var _g2 = Config.titleOmit;
+					while(_g1 < _g2.length) {
+						var rx = _g2[_g1];
+						++_g1;
+						if(rx.match(header)) {
+							show = false;
+							break;
+						}
+					}
+					if(show) {
+						var _g3 = 0;
+						var _g4 = Config.titleReplace;
+						while(_g3 < _g4.length) {
+							var pair = _g4[_g3];
+							++_g3;
+							header = header.replace(pair.what.r,pair.with);
+						}
+						if(markdown) {
+							outLines.push("## [" + header + "](" + url + ")");
+						} else {
+							outLines.push(header);
+						}
 					}
 					header = null;
-				} else if(markdown) {
+				} else if(markdown && show) {
 					if(markdown) {
 						outLines.push("<!-- " + url + " -->");
 					} else {
 						outLines.push(url);
 					}
 				}
-				var ctx = Main.procURL(url);
-				if(ctx.lines.length != 0) {
-					var _g1 = 0;
-					var _g2 = ctx.lines;
-					while(_g1 < _g2.length) {
-						var line1 = _g2[_g1];
-						++_g1;
-						outLines.push(line1);
-					}
-				} else {
-					var text = ctx.getError();
-					if(markdown) {
-						outLines.push("<!-- " + text + " -->");
+				if(show) {
+					var ctx = Main.procURL(url);
+					if(ctx.lines.length != 0) {
+						var _g5 = 0;
+						var _g6 = ctx.lines;
+						while(_g5 < _g6.length) {
+							var line1 = _g6[_g5];
+							++_g5;
+							outLines.push(line1);
+						}
 					} else {
-						outLines.push(text);
+						var text = ctx.getError();
+						if(markdown) {
+							outLines.push("<!-- " + text + " -->");
+						} else {
+							outLines.push(text);
+						}
 					}
 				}
 			} else {
 				if(header != null) {
-					outLines.push(header);
+					if(show) {
+						outLines.push(header);
+					}
 				}
 				header = line;
 			}
@@ -1088,31 +1126,6 @@ haxe_Exception.prototype = $extend(Error.prototype,{
 		return this.__nativeException;
 	}
 });
-var haxe_Log = function() { };
-haxe_Log.__name__ = true;
-haxe_Log.formatOutput = function(v,infos) {
-	var str = Std.string(v);
-	if(infos == null) {
-		return str;
-	}
-	var pstr = infos.fileName + ":" + infos.lineNumber;
-	if(infos.customParams != null) {
-		var _g = 0;
-		var _g1 = infos.customParams;
-		while(_g < _g1.length) {
-			var v = _g1[_g];
-			++_g;
-			str += ", " + Std.string(v);
-		}
-	}
-	return pstr + ": " + str;
-};
-haxe_Log.trace = function(v,infos) {
-	var str = haxe_Log.formatOutput(v,infos);
-	if(typeof(console) != "undefined" && console.log != null) {
-		console.log(str);
-	}
-};
 var haxe_ValueException = function(value,previous,native) {
 	haxe_Exception.call(this,String(value),previous,native);
 	this.value = value;
@@ -1898,6 +1911,8 @@ Config.quality = 80;
 Config.maxWidth = 0;
 Config.maxHeight = 0;
 Config.maxSize = 0;
+Config.titleReplace = [];
+Config.titleOmit = [];
 Config.delay = 0;
 Config.sep = "=";
 Magick.getDims_rxDims = new EReg("\\bdims:(\\d+):(\\d+)","");

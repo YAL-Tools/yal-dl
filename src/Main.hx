@@ -131,6 +131,17 @@ class Main {
 					if (Config.imageExt == ".") Config.imageExt = "";
 					2;
 				};
+				case "--title-replace": {
+					Config.titleReplace.push({
+						what: new EReg(str(), ""),
+						with: str(1)
+					});
+					3;
+				};
+				case "--title-omit": {
+					Config.titleOmit.push(new EReg(str(), ""));
+					2;
+				};
 				// debug
 				case "--cache": Config.cache = true; 1;
 				case "--verbose": Config.verbose = true; 1;
@@ -160,6 +171,7 @@ class Main {
 		}
 		//
 		if (inPath != null) {
+			var show = true;
 			var text = File.getContent(inPath);
 			text = text.replace("\r", "");
 			var lines = text.split("\n");
@@ -169,24 +181,39 @@ class Main {
 				if (rxURL.match(line)) {
 					var url = line;
 					if (header != null && header != "") {
-						if (markdown) {
-							addLine('## [$header]($url)');
-						} else {
-							addLine(header);
-							//addLine(url);
+						show = true;
+						for (rx in Config.titleOmit) {
+							if (rx.match(header)) {
+								show = false;
+								break;
+							}
+						}
+						if (show) {
+							for (pair in Config.titleReplace) {
+								header = pair.what.replace(header, pair.with);
+							}
+							if (markdown) {
+								addLine('## [$header]($url)');
+							} else {
+								addLine(header);
+								//addLine(url);
+							}
 						}
 						header = null;
 					} else {
-						if (markdown) addNote(url);
+						// tag <!-- url --> in md
+						if (markdown && show) addNote(url);
 					}
 					//
-					var ctx = procURL(url);
-					if (ctx.ready) {
-						for (line in ctx.lines) addLine(line);
-					} else addNote(ctx.getError());
+					if (show) {
+						var ctx = procURL(url);
+						if (ctx.ready) {
+							for (line in ctx.lines) addLine(line);
+						} else addNote(ctx.getError());
+					}
 				} else { // title
 					if (header != null) {
-						addLine(header);
+						if (show) addLine(header);
 					}
 					header = line;
 				}

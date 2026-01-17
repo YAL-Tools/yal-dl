@@ -26,6 +26,9 @@ class Config {
 	public static var maxHeight = 0;
 	public static var maxSize = 0;
 	//
+	public static var titleReplace:Array<{ what:EReg, with:String }> = [];
+	public static var titleOmit:Array<EReg> = [];
+	//
 	public static var delay = 0;
 	public static var sep = "=";
 	//

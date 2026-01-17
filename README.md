@@ -160,4 +160,4 @@ If all is well, `bin/yal-dl.js` will be updated.
 - An option to include post text in Markdown output mode?
 - Add permalink to EXIF metadata (needs IM)
 - An option to use `<img>` with width/height to avoid layouts reflows
-- [fxReddit](https://github.com/MinnDevelopment/fxreddit), ddinstagram?
+- [fxReddit](https://github.com/MinnDevelopment/fxreddit), [vxinstagram](https://www.vxinstagram.com)?
